@@ -120,7 +120,7 @@ const TermsPage = () => {
                         <div className="space-y-6">
                             {sections.map((section, index) => (
                                 <motion.div
-                                    key={section.title}
+                                    key={`${section.title}-${index}`}
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
@@ -135,7 +135,7 @@ const TermsPage = () => {
                                     </div>
                                     <ul className="space-y-3">
                                         {section.items.map((item, i) => (
-                                            <li key={i} className="flex items-start gap-3 text-muted-foreground leading-relaxed">
+                                            <li key={`item-${i}`} className="flex items-start gap-3 text-muted-foreground leading-relaxed">
                                                 <span className="w-5 h-5 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0 mt-0.5">
                                                     {i + 1}
                                                 </span>

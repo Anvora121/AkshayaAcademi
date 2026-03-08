@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
-import emailjs from "@emailjs/browser";
 import {
   Select,
   SelectContent,
@@ -22,6 +21,7 @@ import {
   Clock,
   CheckCircle,
   Send,
+  MessageSquare,
   MessageCircle,
   Shield,
 } from "lucide-react";
@@ -53,11 +53,6 @@ const services = [
   { value: "career", label: "Career Counseling" },
   { value: "other", label: "Other" },
 ];
-
-// EmailJS Configuration
-const EMAILJS_SERVICE_ID = "service_9203vn9";
-const EMAILJS_TEMPLATE_ID = "template_44km9rm";
-const EMAILJS_PUBLIC_KEY = "xmAsBIXb9nKsFKtp0";
 
 const EnquiryPage = () => {
   const { toast } = useToast();
@@ -116,9 +111,9 @@ const EnquiryPage = () => {
 
     if (!validateForm()) {
       toast({
-        title: "Please fix the errors",
-        description: "Some fields need your attention.",
-        variant: "destructive",
+        title: "Validation Error",
+        description: "Please fill in all required fields correctly.",
+        variant: "destructive"
       });
       return;
     }
@@ -126,39 +121,39 @@ const EnquiryPage = () => {
     setIsSubmitting(true);
 
     try {
-      // Get country label for the email
-      const countryLabel = countries.find(c => c.value === formData.country)?.label ?? formData.country;
-      const serviceLabel = services.find(s => s.value === formData.service)?.label ?? formData.service;
+      const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-      await emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        {
-          from_name: formData.name,
-          from_email: formData.email,
-          phone: formData.phone,
-          country: countryLabel,
-          service: serviceLabel,
-          message: formData.message || "No additional message provided.",
-          reply_to: formData.email,
-        },
-        EMAILJS_PUBLIC_KEY
-      );
-
-      toast({
-        title: "Enquiry Submitted Successfully! 🎉",
-        description: "Our team will contact you within 24 hours.",
+      const response = await fetch(`${VITE_API_URL} /api/enquiries`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
       });
 
-      // Reset form
-      setFormData({ name: "", email: "", phone: "", country: "", service: "", message: "" });
-      setErrors({});
-    } catch (error) {
-      console.error("EmailJS error:", error);
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to send message');
+      }
+
+      toast({
+        title: "Message Sent Successfully! 🎉",
+        description: "Our team will get back to you within 24 hours.",
+      });
+
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        country: '',
+        service: '',
+        message: ''
+      });
+      setErrors({}); // Clear errors on successful submission
+    } catch (error: any) {
+      console.error('Enquiry Error:', error);
       toast({
         title: "Submission Failed",
-        description: "Unable to send your enquiry. Please try again or email us directly at info@akshayaakademics.com",
-        variant: "destructive",
+        description: error.message || "Something went wrong. Please try again later.",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
@@ -264,7 +259,7 @@ const EnquiryPage = () => {
                     },
                   ].map((item, index) => (
                     <div key={index} className="flex items-start gap-4">
-                      <div className={`w-12 h-12 rounded-xl ${item.color} flex items-center justify-center shrink-0`}>
+                      <div className={`w - 12 h - 12 rounded - xl ${item.color} flex items - center justify - center shrink - 0`}>
                         <item.icon className="w-5 h-5" />
                       </div>
                       <div>
@@ -335,7 +330,7 @@ const EnquiryPage = () => {
                           placeholder="Enter your full name"
                           value={formData.name}
                           onChange={(e) => handleChange("name", e.target.value)}
-                          className={`h-12 ${errors.name ? "border-destructive" : ""}`}
+                          className={`h - 12 ${errors.name ? "border-destructive" : ""} `}
                         />
                         {errors.name && (
                           <p className="text-sm text-destructive">{errors.name}</p>
@@ -352,7 +347,7 @@ const EnquiryPage = () => {
                           placeholder="you@example.com"
                           value={formData.email}
                           onChange={(e) => handleChange("email", e.target.value)}
-                          className={`h-12 ${errors.email ? "border-destructive" : ""}`}
+                          className={`h - 12 ${errors.email ? "border-destructive" : ""} `}
                         />
                         {errors.email && (
                           <p className="text-sm text-destructive">{errors.email}</p>
@@ -369,7 +364,7 @@ const EnquiryPage = () => {
                           placeholder="+91 98765 43210"
                           value={formData.phone}
                           onChange={(e) => handleChange("phone", e.target.value)}
-                          className={`h-12 ${errors.phone ? "border-destructive" : ""}`}
+                          className={`h - 12 ${errors.phone ? "border-destructive" : ""} `}
                         />
                         {errors.phone && (
                           <p className="text-sm text-destructive">{errors.phone}</p>
@@ -383,7 +378,7 @@ const EnquiryPage = () => {
                           value={formData.country}
                           onValueChange={(value) => handleChange("country", value)}
                         >
-                          <SelectTrigger className={`h-12 ${errors.country ? "border-destructive" : ""}`}>
+                          <SelectTrigger className={`h - 12 ${errors.country ? "border-destructive" : ""} `}>
                             <SelectValue placeholder="Select a country" />
                           </SelectTrigger>
                           <SelectContent>
@@ -407,7 +402,7 @@ const EnquiryPage = () => {
                         value={formData.service}
                         onValueChange={(value) => handleChange("service", value)}
                       >
-                        <SelectTrigger className={`h-12 ${errors.service ? "border-destructive" : ""}`}>
+                        <SelectTrigger className={`h - 12 ${errors.service ? "border-destructive" : ""} `}>
                           <SelectValue placeholder="Select a service" />
                         </SelectTrigger>
                         <SelectContent>

@@ -394,7 +394,7 @@ const UniversityDetailPage = () => {
                           </Button>
                         ) : (
                           <Button
-                            onClick={() => alert('Upgrade to Premium to apply to universities directly!')}
+                            onClick={() => navigate('/premium-plans')}
                             className="w-full bg-accent text-white hover:bg-accent/90"
                             size="sm"
                           >

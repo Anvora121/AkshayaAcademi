@@ -112,7 +112,7 @@ const PrivacyPage = () => {
                         <div className="space-y-6">
                             {sections.map((section, index) => (
                                 <motion.div
-                                    key={section.title}
+                                    key={`${section.title}-${index}`}
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
@@ -129,7 +129,7 @@ const PrivacyPage = () => {
                                         {section.content.map((item, i) => {
                                             const [bold, ...rest] = item.split(':');
                                             return (
-                                                <li key={i} className="text-muted-foreground leading-relaxed">
+                                                <li key={`item-${i}`} className="text-muted-foreground leading-relaxed">
                                                     <strong className="text-foreground">{bold}:</strong>
                                                     {rest.join(':')}
                                                 </li>

@@ -180,7 +180,7 @@ const UniversitiesPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredUniversities.map((uni, index) => (
                 <motion.div
-                  key={uni.id}
+                  key={`${uni.id}-${index}`}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
