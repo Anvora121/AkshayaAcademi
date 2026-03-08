@@ -18,6 +18,7 @@ import {
   TrendingUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const countriesData = [
   {
@@ -260,6 +261,12 @@ const EducationPage = () => {
 
   const country = countriesData.find(c => c.id === activeCountry) || countriesData[0];
 
+  usePageMeta({
+    title: `Study in ${country.name}`,
+    description: `Everything you need to know about studying in ${country.name}: education system, visa, costs, top universities, and requirements.`,
+    canonicalPath: `/education`,
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -281,6 +288,9 @@ const EducationPage = () => {
                 src={country.image}
                 alt={country.name}
                 className="w-full h-full object-cover"
+                loading="lazy"
+                srcSet={`${country.image.replace('w=1920', 'w=800')} 800w, ${country.image} 1920w`}
+                sizes="(max-width: 768px) 800px, 1920px"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-primary/50 via-primary/30 to-primary/15" />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />

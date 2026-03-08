@@ -10,6 +10,15 @@ export interface AuthRequest extends Request {
     };
 }
 
+const getJwtSecret = (): string => {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        console.error('FATAL: JWT_SECRET environment variable is not set. Refusing to start.');
+        process.exit(1);
+    }
+    return secret;
+};
+
 export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
 
@@ -18,7 +27,7 @@ export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction)
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret') as any;
+        const decoded = jwt.verify(token, getJwtSecret()) as any;
         req.user = decoded;
         next();
     } catch (err) {

@@ -2,6 +2,8 @@
   "compilerOptions": {
     "target": "es2022",
     "module": "commonjs",
+    "moduleResolution": "node10",
+    "verbatimModuleSyntax": false,
     "rootDir": "./src",
     "outDir": "./dist",
     "esModuleInterop": true,

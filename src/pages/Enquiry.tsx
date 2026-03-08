@@ -7,14 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
-import { 
+import emailjs from "@emailjs/browser";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
+import {
   Phone,
   Mail,
   MapPin,
@@ -23,21 +24,24 @@ import {
   Send,
   MessageCircle,
   Shield,
-  Award,
-  Users
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
+// Synced with Education.tsx countries (all 11)
 const countries = [
-  { value: "us", label: "United States" },
-  { value: "uk", label: "United Kingdom" },
-  { value: "canada", label: "Canada" },
-  { value: "germany", label: "Germany" },
-  { value: "australia", label: "Australia" },
-  { value: "newzealand", label: "New Zealand" },
-  { value: "austria", label: "Austria" },
-  { value: "poland", label: "Poland" },
-  { value: "other", label: "Other / Not Sure" },
+  { value: "us", label: "🇺🇸 United States" },
+  { value: "uk", label: "🇬🇧 United Kingdom" },
+  { value: "canada", label: "🇨🇦 Canada" },
+  { value: "germany", label: "🇩🇪 Germany" },
+  { value: "australia", label: "🇦🇺 Australia" },
+  { value: "newzealand", label: "🇳🇿 New Zealand" },
+  { value: "austria", label: "🇦🇹 Austria" },
+  { value: "poland", label: "🇵🇱 Poland" },
+  { value: "switzerland", label: "🇨🇭 Switzerland" },
+  { value: "netherlands", label: "🇳🇱 Netherlands" },
+  { value: "sweden", label: "🇸🇪 Sweden" },
+  { value: "other", label: "🌍 Other / Not Sure" },
 ];
 
 const services = [
@@ -49,6 +53,11 @@ const services = [
   { value: "career", label: "Career Counseling" },
   { value: "other", label: "Other" },
 ];
+
+// EmailJS Configuration
+const EMAILJS_SERVICE_ID = "service_9203vn9";
+const EMAILJS_TEMPLATE_ID = "template_44km9rm";
+const EMAILJS_PUBLIC_KEY = "xmAsBIXb9nKsFKtp0";
 
 const EnquiryPage = () => {
   const { toast } = useToast();
@@ -62,6 +71,12 @@ const EnquiryPage = () => {
     message: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  usePageMeta({
+    title: "Free Counseling Enquiry",
+    description: "Book a free consultation with Akshaya Akademics expert counselors. Get guidance on overseas education, visa, scholarships, and more.",
+    canonicalPath: "/enquiry",
+  });
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -98,7 +113,7 @@ const EnquiryPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       toast({
         title: "Please fix the errors",
@@ -110,26 +125,44 @@ const EnquiryPage = () => {
 
     setIsSubmitting(true);
 
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      // Get country label for the email
+      const countryLabel = countries.find(c => c.value === formData.country)?.label ?? formData.country;
+      const serviceLabel = services.find(s => s.value === formData.service)?.label ?? formData.service;
 
-    setIsSubmitting(false);
-    
-    toast({
-      title: "Enquiry Submitted Successfully!",
-      description: "Our team will contact you within 24 hours.",
-    });
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          from_name: formData.name,
+          from_email: formData.email,
+          phone: formData.phone,
+          country: countryLabel,
+          service: serviceLabel,
+          message: formData.message || "No additional message provided.",
+          reply_to: formData.email,
+        },
+        EMAILJS_PUBLIC_KEY
+      );
 
-    // Reset form
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      country: "",
-      service: "",
-      message: "",
-    });
-    setErrors({});
+      toast({
+        title: "Enquiry Submitted Successfully! 🎉",
+        description: "Our team will contact you within 24 hours.",
+      });
+
+      // Reset form
+      setFormData({ name: "", email: "", phone: "", country: "", service: "", message: "" });
+      setErrors({});
+    } catch (error) {
+      console.error("EmailJS error:", error);
+      toast({
+        title: "Submission Failed",
+        description: "Unable to send your enquiry. Please try again or email us directly at info@akshayaakademics.com",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (field: string, value: string) => {
@@ -142,14 +175,14 @@ const EnquiryPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main>
         {/* Hero Section */}
         <section className="pt-20 hero-gradient relative overflow-hidden">
           <div className="absolute inset-0 grid-pattern opacity-20" />
-          
+
           <div className="container mx-auto px-4 relative z-10 py-16">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
@@ -167,7 +200,7 @@ const EnquiryPage = () => {
               </p>
             </motion.div>
           </div>
-          
+
           {/* Bottom Wave */}
           <div className="absolute bottom-0 left-0 right-0">
             <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
@@ -184,7 +217,7 @@ const EnquiryPage = () => {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 max-w-6xl mx-auto">
               {/* Contact Info */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
@@ -193,14 +226,42 @@ const EnquiryPage = () => {
                 <h2 className="text-2xl font-bold text-foreground mb-6">
                   Contact Information
                 </h2>
-                
+
                 <div className="space-y-5">
                   {[
-                    { icon: Phone, label: "Phone", value: "+1 (234) 567-890", href: "tel:+1234567890", color: "bg-accent/10 text-accent" },
-                    { icon: Mail, label: "Email", value: "info@akshayaakademics.com", href: "mailto:info@akshayaakademics.com", color: "bg-teal/10 text-teal" },
-                    { icon: MessageCircle, label: "WhatsApp", value: "Quick queries", color: "bg-success/10 text-success" },
-                    { icon: MapPin, label: "Office", value: "123 Education Lane, Global City, 10001", color: "bg-primary/10 text-primary" },
-                    { icon: Clock, label: "Hours", value: "Mon - Sat: 9:00 AM - 7:00 PM", color: "bg-accent/10 text-accent" },
+                    {
+                      icon: Phone,
+                      label: "Phone",
+                      value: "+91 XXXXX XXXXX",
+                      href: "tel:+919999999999",
+                      color: "bg-accent/10 text-accent",
+                    },
+                    {
+                      icon: Mail,
+                      label: "Email",
+                      value: "info@akshayaakademics.com",
+                      href: "mailto:info@akshayaakademics.com",
+                      color: "bg-teal/10 text-teal",
+                    },
+                    {
+                      icon: MessageCircle,
+                      label: "WhatsApp",
+                      value: "Chat with us instantly",
+                      href: "https://wa.me/919999999999",
+                      color: "bg-success/10 text-success",
+                    },
+                    {
+                      icon: MapPin,
+                      label: "Office",
+                      value: "Hyderabad, Telangana, India",
+                      color: "bg-primary/10 text-primary",
+                    },
+                    {
+                      icon: Clock,
+                      label: "Hours",
+                      value: "Mon – Sat: 9:00 AM – 7:00 PM IST",
+                      color: "bg-accent/10 text-accent",
+                    },
                   ].map((item, index) => (
                     <div key={index} className="flex items-start gap-4">
                       <div className={`w-12 h-12 rounded-xl ${item.color} flex items-center justify-center shrink-0`}>
@@ -209,7 +270,12 @@ const EnquiryPage = () => {
                       <div>
                         <h3 className="font-semibold text-foreground mb-0.5">{item.label}</h3>
                         {item.href ? (
-                          <a href={item.href} className="text-muted-foreground hover:text-accent transition-colors text-sm">
+                          <a
+                            href={item.href}
+                            target={item.href.startsWith("https://wa.me") ? "_blank" : undefined}
+                            rel={item.href.startsWith("https://wa.me") ? "noopener noreferrer" : undefined}
+                            className="text-muted-foreground hover:text-accent transition-colors text-sm"
+                          >
                             {item.value}
                           </a>
                         ) : (
@@ -244,7 +310,7 @@ const EnquiryPage = () => {
               </motion.div>
 
               {/* Form */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
@@ -265,6 +331,7 @@ const EnquiryPage = () => {
                         <Label htmlFor="name">Full Name *</Label>
                         <Input
                           id="name"
+                          name="name"
                           placeholder="Enter your full name"
                           value={formData.name}
                           onChange={(e) => handleChange("name", e.target.value)}
@@ -280,6 +347,7 @@ const EnquiryPage = () => {
                         <Label htmlFor="email">Email Address *</Label>
                         <Input
                           id="email"
+                          name="email"
                           type="email"
                           placeholder="you@example.com"
                           value={formData.email}
@@ -296,8 +364,9 @@ const EnquiryPage = () => {
                         <Label htmlFor="phone">Phone Number *</Label>
                         <Input
                           id="phone"
+                          name="phone"
                           type="tel"
-                          placeholder="+1 (234) 567-890"
+                          placeholder="+91 98765 43210"
                           value={formData.phone}
                           onChange={(e) => handleChange("phone", e.target.value)}
                           className={`h-12 ${errors.phone ? "border-destructive" : ""}`}
@@ -359,6 +428,7 @@ const EnquiryPage = () => {
                       <Label htmlFor="message">Additional Message (Optional)</Label>
                       <Textarea
                         id="message"
+                        name="message"
                         placeholder="Tell us about your educational background, goals, or any specific questions..."
                         value={formData.message}
                         onChange={(e) => handleChange("message", e.target.value)}
@@ -375,7 +445,10 @@ const EnquiryPage = () => {
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? (
-                        "Submitting..."
+                        <span className="flex items-center gap-2">
+                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Sending...
+                        </span>
                       ) : (
                         <>
                           Submit Enquiry

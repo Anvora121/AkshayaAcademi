@@ -5,6 +5,7 @@ import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   Search,
   MapPin,
@@ -24,6 +25,12 @@ const UniversitiesPage = () => {
   const [activeCountry, setActiveCountry] = useState(initialCountry);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
+
+  usePageMeta({
+    title: "Explore Universities",
+    description: "Discover 500+ top-ranked universities across 11 countries. Filter by country, course, and more to find your perfect match.",
+    canonicalPath: "/universities",
+  });
 
   // For "All Countries" - rotate through country backgrounds
   const countryKeys = Object.keys(countryImages).filter(k => k !== 'all');

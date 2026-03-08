@@ -7,11 +7,18 @@ import { Check, Star, Crown, ArrowRight, Zap, Shield, Sparkles } from 'lucide-re
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 const PremiumPlans = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { toast } = useToast();
+
+    usePageMeta({
+        title: "Premium Plans",
+        description: "Upgrade to Akshaya Akademics Premium for guaranteed scholarships, priority visa assistance, and dedicated counselor access.",
+        canonicalPath: "/premium-plans",
+    });
 
     const handleUpgrade = () => {
         if (!user) {
@@ -27,7 +34,7 @@ const PremiumPlans = () => {
             title: "Processing Upgrade...",
             description: "Redirecting you to the secure payment gateway.",
         });
-        
+
         // Simulate payment redirection
         setTimeout(() => {
             toast({
@@ -40,7 +47,7 @@ const PremiumPlans = () => {
     return (
         <div className="min-h-screen bg-background relative flex flex-col">
             <Header />
-            
+
             <main className="flex-1">
                 {/* Background Effects */}
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-yellow-500/10 rounded-full blur-[150px] -z-10 pointer-events-none" />
@@ -50,7 +57,7 @@ const PremiumPlans = () => {
                 <section className="pt-32 pb-20 px-4">
                     <div className="container mx-auto max-w-6xl">
                         <div className="text-center mb-16">
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, y: -20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-sm font-bold mb-6 tracking-wide uppercase"
@@ -58,7 +65,7 @@ const PremiumPlans = () => {
                                 <Crown className="w-4 h-4" />
                                 Upgrade Your Future
                             </motion.div>
-                            <motion.h1 
+                            <motion.h1
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.1 }}
@@ -66,7 +73,7 @@ const PremiumPlans = () => {
                             >
                                 Choose The Ultimate <span className="text-gradient">Advantage</span>
                             </motion.h1>
-                            <motion.p 
+                            <motion.p
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.2 }}
@@ -78,7 +85,7 @@ const PremiumPlans = () => {
 
                         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
                             {/* Free Tier */}
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, x: -30 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.3 }}
@@ -109,7 +116,7 @@ const PremiumPlans = () => {
                                         ))}
                                     </ul>
                                 </div>
-                                
+
                                 {user?.role === 'user' ? (
                                     <Button variant="outline" className="w-full h-14 text-lg border-accent/20 hover:bg-accent/10" disabled>
                                         Current Plan
@@ -124,14 +131,14 @@ const PremiumPlans = () => {
                             </motion.div>
 
                             {/* Premium Tier */}
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, x: 30 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.4 }}
                                 className="premium-card p-10 flex flex-col justify-between border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-500/5 to-transparent relative overflow-hidden"
                             >
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/20 blur-[50px] -z-10" />
-                                
+
                                 <div className="absolute top-6 right-6">
                                     <div className="px-3 py-1 bg-yellow-500 text-yellow-950 text-xs font-bold rounded-full uppercase tracking-wider flex items-center gap-1">
                                         <Sparkles className="w-3 h-3" /> Most Popular
@@ -167,8 +174,8 @@ const PremiumPlans = () => {
                                         ))}
                                     </ul>
                                 </div>
-                                
-                                <Button 
+
+                                <Button
                                     onClick={handleUpgrade}
                                     className="w-full h-14 text-lg bg-yellow-500 hover:bg-yellow-400 text-yellow-950 font-bold shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:shadow-[0_0_30px_rgba(234,179,8,0.5)] transition-all group"
                                 >
@@ -179,7 +186,7 @@ const PremiumPlans = () => {
                         </div>
                     </div>
                 </section>
-                
+
                 {/* Feature Highlights */}
                 <section className="py-20 border-t border-border bg-secondary/20">
                     <div className="container mx-auto px-4 max-w-6xl">

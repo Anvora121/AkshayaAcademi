@@ -3,14 +3,15 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { 
-  GraduationCap, 
-  Award, 
-  FileCheck, 
-  Languages, 
-  Briefcase, 
-  Users, 
-  Target, 
+import { usePageMeta } from "@/hooks/usePageMeta";
+import {
+  GraduationCap,
+  Award,
+  FileCheck,
+  Languages,
+  Briefcase,
+  Users,
+  Target,
   Home,
   ArrowRight,
   CheckCircle,
@@ -207,10 +208,16 @@ const servicesData = [
 ];
 
 const ServicesPage = () => {
+  usePageMeta({
+    title: "Our Services",
+    description: "Comprehensive overseas education services including university counseling, scholarship guidance, visa assistance, language training, and placement support.",
+    canonicalPath: "/services",
+  });
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden flex flex-col">
       <Header />
-      
+
       {/* Cinematic Background Globals */}
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-accent/5 rounded-full blur-[150px] -z-10 pointer-events-none" />
       <div className="absolute top-[40%] left-[-200px] w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
@@ -221,7 +228,7 @@ const ServicesPage = () => {
         <section className="pt-40 pb-20 relative overflow-hidden min-h-[500px] flex items-center">
           {/* Background Image */}
           <div className="absolute inset-0">
-            <img 
+            <img
               src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1920&q=80"
               alt="Students collaborating"
               className="w-full h-full object-cover scale-105"
@@ -230,17 +237,17 @@ const ServicesPage = () => {
             <div className="absolute inset-0 bg-slate-900/60" />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
           </div>
-          
+
           <div className="absolute inset-0 grid-pattern opacity-20" />
-          
+
           <div className="container mx-auto px-4 relative z-20">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.7, ease: "easeOut" }}
               className="max-w-4xl mx-auto text-center"
             >
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
@@ -250,7 +257,7 @@ const ServicesPage = () => {
                 Premium Consultation
               </motion.div>
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-8 leading-tight drop-shadow-lg">
-                Architect Your <br className="hidden md:block"/>
+                Architect Your <br className="hidden md:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white/80 to-white/50 drop-shadow-sm">Global Future</span>
               </h1>
               <p className="text-xl text-white/90 leading-relaxed max-w-2xl mx-auto font-medium drop-shadow-md">
@@ -265,7 +272,7 @@ const ServicesPage = () => {
           <div className="container mx-auto px-4">
             <div className="space-y-12">
               {servicesData.map((service, index) => (
-                <motion.div 
+                <motion.div
                   key={service.id}
                   id={service.id}
                   initial={{ opacity: 0, y: 40 }}
@@ -276,17 +283,17 @@ const ServicesPage = () => {
                 >
                   <div className="premium-card overflow-hidden bg-card/40 border-border/50 hover:border-accent/30 transition-all duration-500 group-hover:shadow-2xl backdrop-blur-sm">
                     <div className="grid md:grid-cols-[400px_1fr] lg:grid-cols-[500px_1fr] h-full">
-                      
+
                       {/* Left: Cinematic Image Panel */}
                       <div className="relative h-64 md:h-auto overflow-hidden">
                         <div className="absolute inset-0 bg-background/20 z-10 mix-blend-overlay group-hover:bg-transparent transition-colors duration-500" />
-                        <img 
+                        <img
                           src={service.image}
                           alt={service.title}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                         <div className={`absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-background via-background/80 to-transparent md:via-background/50 z-20`} />
-                        
+
                         {/* Floating Icon Badge */}
                         <div className="absolute bottom-8 left-8 z-30">
                           <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${service.gradient} flex items-center justify-center shadow-xl ${service.shadow} transform -rotate-6 group-hover:rotate-0 transition-transform duration-500`}>
@@ -294,7 +301,7 @@ const ServicesPage = () => {
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Right: Content Panel */}
                       <div className="p-8 md:p-12 lg:p-16 flex flex-col justify-center relative">
                         {/* Subtle background glow based on service gradient */}
@@ -317,7 +324,7 @@ const ServicesPage = () => {
 
                         {/* Bento Grid Features */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-                          
+
                           {service.process && (
                             <div className="bg-secondary/30 backdrop-blur-sm rounded-xl p-6 border border-border/50 hover:border-border/80 transition-colors">
                               <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
@@ -388,7 +395,7 @@ const ServicesPage = () => {
                               </div>
                             </div>
                           )}
-                          
+
                         </div>
 
                         {/* Footer Action Area */}
@@ -422,9 +429,9 @@ const ServicesPage = () => {
         <section className="py-32 relative overflow-hidden">
           <div className="absolute inset-0 bg-accent/5" />
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-accent/10 blur-[120px] rounded-full pointer-events-none" />
-          
+
           <div className="container mx-auto px-4 relative z-10 text-center">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}

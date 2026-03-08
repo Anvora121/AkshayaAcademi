@@ -130,13 +130,13 @@ const Footer = () => {
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-accent mt-0.5 shrink-0" />
                 <span className="text-sm text-primary-foreground/60">
-                  123 Education Lane,<br />Global City, 10001
+                  Hyderabad, Telangana,<br />India
                 </span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-accent shrink-0" />
-                <a href="tel:+1234567890" className="text-sm text-primary-foreground/60 hover:text-accent transition-colors">
-                  +1 (234) 567-890
+                <a href="tel:+919999999999" className="text-sm text-primary-foreground/60 hover:text-accent transition-colors">
+                  +91 XXXXX XXXXX
                 </a>
               </li>
               <li className="flex items-center gap-3">
@@ -157,9 +157,19 @@ const Footer = () => {
             <p className="text-sm text-primary-foreground/50">
               © {currentYear} Akshaya Akademics. All rights reserved.
             </p>
-            <p className="text-xs text-primary-foreground/30 text-center md:text-right max-w-md">
-              Disclaimer: All information is indicative. Please verify with official sources before making decisions.
-            </p>
+            <div className="flex items-center gap-4 flex-wrap justify-center">
+              <Link to="/privacy" className="text-xs text-primary-foreground/40 hover:text-accent transition-colors">
+                Privacy Policy
+              </Link>
+              <span className="text-primary-foreground/20">·</span>
+              <Link to="/terms" className="text-xs text-primary-foreground/40 hover:text-accent transition-colors">
+                Terms of Service
+              </Link>
+              <span className="text-primary-foreground/20">·</span>
+              <p className="text-xs text-primary-foreground/30">
+                All info is indicative. Verify with official sources.
+              </p>
+            </div>
           </div>
         </div>
       </div>
