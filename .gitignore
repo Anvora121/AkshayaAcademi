@@ -1,1 +1,11 @@
 node_modules
+
+# Environment variables — never commit these
+.env
+.env.local
+.env.production
+backend/.env
+
+# Keep the example template
+!.env.example
+!backend/.env.example

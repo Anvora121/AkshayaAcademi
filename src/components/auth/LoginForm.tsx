@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 export const LoginForm = () => {
     const location = useLocation();
     const [isSignup, setIsSignup] = useState(location.state?.isSignup || false);
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -23,11 +24,13 @@ export const LoginForm = () => {
         setIsLoading(true);
 
         try {
-            const endpoint = isSignup ? 'http://localhost:5000/api/auth/register' : 'http://localhost:5000/api/auth/login';
+            const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const endpoint = isSignup ? `${VITE_API_URL}/api/auth/register` : `${VITE_API_URL}/api/auth/login`;
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
+                credentials: 'include',
+                body: JSON.stringify(isSignup ? { name, email, password } : { email, password }),
             });
 
             const data = await response.json();
@@ -36,7 +39,7 @@ export const LoginForm = () => {
                 throw new Error(data.message || (isSignup ? 'Registration failed' : 'Login failed'));
             }
 
-            login(data.user, data.token);
+            login(data.user);
 
             // Role-based redirection
             if (data.user.role === 'admin') {
@@ -78,6 +81,22 @@ export const LoginForm = () => {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    {isSignup && (
+                        <div>
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                                Full Name
+                            </label>
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                                placeholder="John Doe"
+                                required={isSignup}
+                            />
+                        </div>
+                    )}
+
                     <div>
                         <label className="block text-sm font-medium text-foreground mb-2">
                             Email Address
@@ -113,6 +132,14 @@ export const LoginForm = () => {
                     >
                         {isLoading ? 'Processing...' : (isSignup ? 'Sign Up' : 'Sign In')}
                     </Button>
+
+                    {!isSignup && (
+                        <div className="text-center mt-2">
+                            <Link to="/forgot-password" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                                Forgot your password?
+                            </Link>
+                        </div>
+                    )}
 
                     <div className="mt-4 text-center">
                         <p className="text-sm text-muted-foreground">

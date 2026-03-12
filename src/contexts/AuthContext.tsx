@@ -4,6 +4,7 @@ export type UserRole = 'user' | 'subscribed' | 'admin';
 
 export interface User {
     id: string;
+    name?: string;
     email: string;
     role: UserRole;
     subscriptionStatus?: string;
@@ -11,9 +12,9 @@ export interface User {
 
 interface AuthContextType {
     user: User | null;
-    token: string | null;
-    login: (userData: User, token: string) => void;
+    login: (userData: User) => void;
     logout: () => void;
+    refreshUser: () => Promise<void>;
     isAuthenticated: boolean;
     isLoading: boolean;
 }
@@ -22,44 +23,76 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        // Check localStorage for token and user on initial load
-        const storedToken = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
+    const refreshUser = async () => {
+        try {
+            const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const response = await fetch(`${VITE_API_URL}/api/auth/me`, {
+                credentials: 'include',
+            });
 
-        if (storedToken && storedUser) {
-            try {
-                setToken(storedToken);
-                setUser(JSON.parse(storedUser));
-            } catch (error) {
-                // If parsing fails, clear bad data
-                localStorage.removeItem('token');
+            if (response.ok) {
+                const userData = await response.json();
+                const updatedUser = {
+                    id: userData._id || userData.id,
+                    name: userData.name,
+                    email: userData.email,
+                    role: userData.role,
+                    subscriptionStatus: userData.subscriptionStatus
+                };
+                setUser(updatedUser);
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+            } else {
+                // Cookie invalid or expired
+                setUser(null);
                 localStorage.removeItem('user');
             }
+        } catch (error) {
+            console.error('Failed to refresh user', error);
         }
-        setIsLoading(false);
+    };
+
+    useEffect(() => {
+        const initAuth = async () => {
+            const storedUser = localStorage.getItem('user');
+
+            if (storedUser) {
+                setUser(JSON.parse(storedUser));
+                await refreshUser();
+            } else {
+                // Even without a stored user, they might have an active cookie from another tab
+                await refreshUser();
+            }
+            setIsLoading(false);
+        };
+
+        initAuth();
     }, []);
 
-    const login = (userData: User, authToken: string) => {
+    const login = (userData: User) => {
         setUser(userData);
-        setToken(authToken);
-        localStorage.setItem('token', authToken);
         localStorage.setItem('user', JSON.stringify(userData));
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            await fetch(`${VITE_API_URL}/api/auth/logout`, {
+                method: 'POST',
+                credentials: 'include',
+            });
+        } catch (error) {
+            console.error('Logout request failed', error);
+        }
+
         setUser(null);
-        setToken(null);
-        localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/';
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token, isLoading }}>
+        <AuthContext.Provider value={{ user, login, logout, refreshUser, isAuthenticated: !!user, isLoading }}>
             {children}
         </AuthContext.Provider>
     );

@@ -4,54 +4,53 @@ import { OfferCard, OfferData } from './OfferCard';
 export const OffersList = () => {
     const [offers, setOffers] = useState<OfferData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [error, setError] = useState('');
 
-    // Mock data for UI demonstration purposes while backend is not connected
-    useEffect(() => {
-        // In a real scenario, this would be: 
-        // fetch('http://localhost:5000/api/offers').then(res => res.json()).then(data => setOffers(data))
+    const fetchOffers = async (currentPage: number) => {
+        setIsLoading(true);
+        setError('');
+        try {
+            const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const res = await fetch(`${VITE_API_URL}/api/offers?page=${currentPage}&limit=6`);
+            if (res.ok) {
+                const data = await res.json();
 
-        setTimeout(() => {
-            setOffers([
-                {
-                    _id: '1',
-                    universityName: 'Harvard University',
-                    description: 'Special early-bird discount on global computer science masters program application fees and partial scholarship.',
-                    originalFee: 50000,
-                    discountedFee: 35000,
-                    offerStartDate: new Date().toISOString(),
-                    offerEndDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
-                    isActive: true,
-                    premiumOnlyAction: true
-                },
-                {
-                    _id: '2',
-                    universityName: 'Oxford University',
-                    description: 'Limited spots available for international students with guaranteed housing subsidy.',
-                    originalFee: 45000,
-                    discountedFee: 38000,
-                    offerStartDate: new Date().toISOString(),
-                    offerEndDate: new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString(), // 5 hours from now
-                    isActive: true,
-                    premiumOnlyAction: true
-                },
-                {
-                    _id: '3',
-                    universityName: 'MIT',
-                    description: 'Engineering excellence grant for top candidates applying this week.',
-                    originalFee: 55000,
-                    discountedFee: 40000,
-                    offerStartDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-                    offerEndDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // Expired 2 days ago
-                    isActive: false,
-                    premiumOnlyAction: true
+                // Handle new paginated format
+                if (data.offers && data.pagination) {
+                    setOffers(data.offers);
+                    setTotalPages(data.pagination.pages);
+                    setPage(data.pagination.page);
+                } else if (Array.isArray(data)) {
+                    // Fallback for older non-paginated API if it sneaks through
+                    setOffers(data);
+                    setTotalPages(1);
                 }
-            ]);
+            } else {
+                setError('Failed to load offers.');
+            }
+        } catch (err) {
+            setError('Could not connect to the server.');
+        } finally {
             setIsLoading(false);
-        }, 1000);
-    }, []);
+        }
+    };
 
-    if (isLoading) {
+    useEffect(() => {
+        fetchOffers(page);
+    }, [page]);
+
+    if (isLoading && offers.length === 0) {
         return <div className="py-20 text-center text-muted-foreground">Loading premium offers...</div>;
+    }
+
+    if (error) {
+        return <div className="py-20 text-center text-red-500 font-medium">{error}</div>;
+    }
+
+    if (offers.length === 0) {
+        return <div className="py-12 text-center text-muted-foreground">No active offers available at the moment. Check back later!</div>;
     }
 
     return (
@@ -69,6 +68,29 @@ export const OffersList = () => {
                     <OfferCard key={offer._id} offer={offer} />
                 ))}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-4 mt-12">
+                    <button
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary/80 font-medium transition-colors"
+                    >
+                        Previous
+                    </button>
+                    <span className="text-muted-foreground font-medium">
+                        Page {page} of {totalPages}
+                    </span>
+                    <button
+                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                        className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary/80 font-medium transition-colors"
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

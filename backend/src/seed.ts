@@ -6,8 +6,13 @@ import { User } from './models/User';
 dotenv.config();
 
 const seedDatabase = async () => {
+    if (!process.env.MONGODB_URI) {
+        console.error("FATAL ERROR: MONGODB_URI is not defined.");
+        process.exit(1);
+    }
+
     try {
-        await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aditiytej');
+        await mongoose.connect(process.env.MONGODB_URI);
         console.log('Connected to MongoDB');
 
         // Clear existing users
@@ -20,12 +25,14 @@ const seedDatabase = async () => {
         // Seed Users
         const users = [
             {
+                name: 'System Admin',
                 email: 'admin@test.com',
                 passwordHash,
                 role: 'admin',
                 subscriptionStatus: 'active',
             },
             {
+                name: 'Premium Member',
                 email: 'sub@test.com',
                 passwordHash,
                 role: 'subscribed',
@@ -33,6 +40,7 @@ const seedDatabase = async () => {
                 subscriptionExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
             },
             {
+                name: 'Regular User',
                 email: 'user@test.com',
                 passwordHash,
                 role: 'user',

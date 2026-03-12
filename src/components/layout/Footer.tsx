@@ -73,8 +73,8 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <h4 className="font-semibold text-base mb-5">Services</h4>
             <ul className="space-y-3">
-              {footerLinks.services.map((link) => (
-                <li key={link.href}>
+              {footerLinks.services.map((link, index) => (
+                <li key={`${link.href}-${index}`}>
                   <Link
                     to={link.href}
                     className="text-sm text-primary-foreground/60 hover:text-accent transition-colors inline-flex items-center gap-1 group"
@@ -91,8 +91,8 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <h4 className="font-semibold text-base mb-5">Destinations</h4>
             <ul className="space-y-3">
-              {footerLinks.destinations.map((link) => (
-                <li key={link.href}>
+              {footerLinks.destinations.map((link, index) => (
+                <li key={`${link.href}-${index}`}>
                   <Link
                     to={link.href}
                     className="text-sm text-primary-foreground/60 hover:text-accent transition-colors inline-flex items-center gap-1 group"
@@ -109,8 +109,8 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <h4 className="font-semibold text-base mb-5">Company</h4>
             <ul className="space-y-3">
-              {footerLinks.company.map((link) => (
-                <li key={link.href}>
+              {footerLinks.company.map((link, index) => (
+                <li key={`${link.href}-${index}`}>
                   <Link
                     to={link.href}
                     className="text-sm text-primary-foreground/60 hover:text-accent transition-colors inline-flex items-center gap-1 group"
@@ -130,7 +130,7 @@ const Footer = () => {
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-accent mt-0.5 shrink-0" />
                 <span className="text-sm text-primary-foreground/60">
-                  Hyderabad, Telangana,<br />India
+                  Coimbatore, Tamil Nadu,<br />India
                 </span>
               </li>
               <li className="flex items-center gap-3">

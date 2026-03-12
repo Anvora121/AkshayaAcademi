@@ -31,17 +31,11 @@ const PremiumPlans = () => {
         }
 
         toast({
-            title: "Processing Upgrade...",
-            description: "Redirecting you to the secure payment gateway.",
+            title: "Redirecting...",
+            description: "Taking you to the contact form to complete your upgrade.",
         });
 
-        // Simulate payment redirection
-        setTimeout(() => {
-            toast({
-                title: "Upgrade Successful!",
-                description: "Welcome to Premium. Your account will be updated shortly.",
-            });
-        }, 1500);
+        navigate('/enquiry?service=Premium+Upgrade');
     };
 
     return (

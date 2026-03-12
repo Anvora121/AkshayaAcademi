@@ -18,7 +18,7 @@ const AdminDashboard = () => {
             <div className="pt-24 pb-16 px-6 relative z-10 w-full">
                 <div className="max-w-7xl mx-auto">
                     {/* Header */}
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6"
@@ -39,10 +39,10 @@ const AdminDashboard = () => {
                             <div className="flex items-center gap-3 mb-2">
                                 <h1 className="text-4xl font-bold text-foreground">Command Center</h1>
                             </div>
-                            <p className="text-muted-foreground text-lg">System Management Console. Welcome back, {user?.email}</p>
+                            <p className="text-muted-foreground text-lg">System Management Console. Welcome back, {user?.name || user?.email}</p>
                         </div>
-                        <button 
-                            onClick={logout} 
+                        <button
+                            onClick={logout}
                             className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500/20 hover:scale-105 transition-all font-medium border border-red-500/20"
                         >
                             <LogOut className="w-4 h-4" />
@@ -51,7 +51,7 @@ const AdminDashboard = () => {
                     </motion.div>
 
                     {/* System Status Banner */}
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
@@ -68,7 +68,7 @@ const AdminDashboard = () => {
                                 </p>
                             </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 text-green-500 font-medium text-sm border border-green-500/20">
                             <Activity className="w-4 h-4" />
                             Systems Operational

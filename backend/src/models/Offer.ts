@@ -9,6 +9,7 @@ export interface IOffer extends Document {
     offerEndDate: Date;
     isActive: boolean;
     premiumOnlyAction: boolean;
+    imageUrl?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -23,6 +24,7 @@ const OfferSchema: Schema = new Schema(
         offerEndDate: { type: Date, required: true },
         isActive: { type: Boolean, required: true, default: true },
         premiumOnlyAction: { type: Boolean, required: true, default: true },
+        imageUrl: { type: String, required: false },
     },
     { timestamps: true }
 );

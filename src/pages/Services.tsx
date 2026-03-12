@@ -273,7 +273,7 @@ const ServicesPage = () => {
             <div className="space-y-12">
               {servicesData.map((service, index) => (
                 <motion.div
-                  key={service.id}
+                  key={`${service.id}-${index}`}
                   id={service.id}
                   initial={{ opacity: 0, y: 40 }}
                   whileInView={{ opacity: 1, y: 0 }}
