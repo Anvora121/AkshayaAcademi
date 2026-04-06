@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { API_BASE_URL } from "@/config";
 import { Link } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -121,9 +122,7 @@ const EnquiryPage = () => {
     setIsSubmitting(true);
 
     try {
-      const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-      const response = await fetch(`${VITE_API_URL}/api/enquiries`, {
+      const response = await fetch(`${API_BASE_URL}/enquiries`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

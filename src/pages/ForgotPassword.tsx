@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '@/config';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, KeyRound, MailCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,6 @@ const ForgotPassword = () => {
     const navigate = useNavigate();
     const { toast } = useToast();
 
-    const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -23,7 +23,7 @@ const ForgotPassword = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`${VITE_API_URL}/api/auth/forgot-password`, {
+            const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),
@@ -50,7 +50,7 @@ const ForgotPassword = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`${VITE_API_URL}/api/auth/reset-password`, {
+            const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, otp, newPassword }),

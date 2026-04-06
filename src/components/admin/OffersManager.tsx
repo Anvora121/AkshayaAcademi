@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/config';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label'; // Assuming Label component is available
@@ -43,8 +44,7 @@ export const OffersManager = () => {
     const fetchOffers = async (currentPage = page) => {
         setIsLoading(true);
         try {
-            const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-            const response = await fetch(`${VITE_API_URL}/api/offers?page=${currentPage}&limit=10`);
+            const response = await fetch(`${API_BASE_URL}/offers?page=${currentPage}&limit=10`);
             if (response.ok) {
                 const data = await response.json();
                 if (data.offers && data.pagination) {
@@ -87,10 +87,9 @@ export const OffersManager = () => {
         setError('');
 
         try {
-            const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
             const requestUrl = isEditing && formData._id
-                ? `${VITE_API_URL}/api/offers/${formData._id}`
-                : `${VITE_API_URL}/api/offers`;
+                ? `${API_BASE_URL}/offers/${formData._id}`
+                : `${API_BASE_URL}/offers`;
 
             const method = isEditing ? 'PUT' : 'POST';
 
@@ -119,8 +118,7 @@ export const OffersManager = () => {
         if (!window.confirm('Are you sure you want to delete this offer?')) return;
 
         try {
-            const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-            const response = await fetch(`${VITE_API_URL}/api/offers/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/offers/${id}`, {
                 method: 'DELETE',
                 credentials: 'include',
             });

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/config';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -31,8 +32,7 @@ export const ApplicationsManager = () => {
 
     const fetchApplications = async () => {
         try {
-            const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-            const response = await fetch(`${VITE_API_URL}/api/offers/applications/all`, {
+            const response = await fetch(`${API_BASE_URL}/offers/applications/all`, {
                 credentials: 'include'
             });
 
@@ -55,8 +55,7 @@ export const ApplicationsManager = () => {
 
     const handleStatusUpdate = async (id: string, newStatus: 'approved' | 'rejected') => {
         try {
-            const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-            const response = await fetch(`${VITE_API_URL}/api/offers/applications/${id}/status`, {
+            const response = await fetch(`${API_BASE_URL}/offers/applications/${id}/status`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'

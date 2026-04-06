@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/config';
 import { OfferCard, OfferData } from './OfferCard';
 
 export const OffersList = () => {
@@ -12,8 +13,7 @@ export const OffersList = () => {
         setIsLoading(true);
         setError('');
         try {
-            const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-            const res = await fetch(`${VITE_API_URL}/api/offers?page=${currentPage}&limit=6`);
+            const res = await fetch(`${API_BASE_URL}/offers?page=${currentPage}&limit=6`);
             if (res.ok) {
                 const data = await res.json();
 

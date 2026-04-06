@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { API_BASE_URL } from '@/config';
 
 export type UserRole = 'user' | 'subscribed' | 'admin';
 
@@ -27,8 +28,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const refreshUser = async () => {
         try {
-            const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-            const response = await fetch(`${VITE_API_URL}/api/auth/me`, {
+            const response = await fetch(`${API_BASE_URL}/auth/me`, {
                 credentials: 'include',
             });
 
@@ -77,8 +77,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const logout = async () => {
         try {
-            const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-            await fetch(`${VITE_API_URL}/api/auth/logout`, {
+            await fetch(`${API_BASE_URL}/auth/logout`, {
                 method: 'POST',
                 credentials: 'include',
             });

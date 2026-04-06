@@ -1,32 +1,18 @@
 version: '3.8'
 
-services:
-  mongodb:
-    image: mongo:latest
-    container_name: akshaya_mongo
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-    networks:
-      - akshaya_network
-    restart: unless-stopped
+# MongoDB is now hosted on Atlas — no local container needed.
+# Set all secrets in backend/.env (never commit it).
 
+services:
   backend:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: akshaya_backend
     ports:
       - "5000:5000"
-    environment:
-      - PORT=5000
-      - MONGODB_URI=mongodb://mongodb:27017/akshaya
-      - JWT_SECRET=change_this_to_a_secure_random_string_in_production
-      - FRONTEND_URL=http://localhost:5173
-      - ADMIN_EMAILS=admin@test.com
-    depends_on:
-      - mongodb
+    env_file:
+      - ./backend/.env          # loads MONGODB_URI, JWT_SECRET, etc. from file
     networks:
       - akshaya_network
     restart: unless-stopped
@@ -37,7 +23,7 @@ services:
       dockerfile: Dockerfile
     container_name: akshaya_frontend
     ports:
-      - "5173:80" # Mapping 5173 on host to 80 (Nginx) in container
+      - "5173:80"               # host:5173 → Nginx in container:80
     depends_on:
       - backend
     networks:
@@ -47,6 +33,3 @@ services:
 networks:
   akshaya_network:
     driver: bridge
-
-volumes:
-  mongodb_data:
