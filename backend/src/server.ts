@@ -33,6 +33,8 @@ const allowedOrigins = [
     'http://localhost:8080',
     'https://akshayaakademics.com',
     'https://www.akshayaakademics.com',
+    'https://akshaya-academi.vercel.app',
+    'https://akshaya-academi-t2msxnyl3-balas-projects-b55556bc.vercel.app',
 ];
 
 const corsOptions: CorsOptions = {
