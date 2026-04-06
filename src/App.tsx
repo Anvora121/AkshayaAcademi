@@ -18,6 +18,7 @@ import LoginForm from "./components/auth/LoginForm";
 import UserDashboard from "./pages/dashboard/UserDashboard";
 import PremiumDashboard from "./pages/dashboard/PremiumDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import PremiumPlans from "./pages/PremiumPlans";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Unauthorized from "./pages/Unauthorized";
@@ -82,6 +83,14 @@ const App = () => (
                 <ProtectedRoute>
                   <RoleRoute allowedRoles={['admin']}>
                     <AdminDashboard />
+                  </RoleRoute>
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/analytics" element={
+                <ProtectedRoute>
+                  <RoleRoute allowedRoles={['admin']}>
+                    <AdminAnalytics />
                   </RoleRoute>
                 </ProtectedRoute>
               } />

@@ -19,6 +19,13 @@ const authLimiter = (0, express_rate_limit_1.default)({
     legacyHeaders: false,
     message: { message: 'Too many authentication attempts, please try again after 15 minutes' }
 });
+const resetPasswordLimiter = (0, express_rate_limit_1.default)({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: 'Too many password reset attempts, please try again after 15 minutes' }
+});
 const generateToken = (userId, role, subscriptionStatus, name) => {
     return jsonwebtoken_1.default.sign({ id: userId, role, subscriptionStatus, name }, process.env.JWT_SECRET, { expiresIn: '1d' });
 };
@@ -146,7 +153,7 @@ router.post('/forgot-password', authLimiter, async (req, res) => {
     }
 });
 // Reset Password - Verify OTP & Update
-router.post('/reset-password', authLimiter, async (req, res) => {
+router.post('/reset-password', resetPasswordLimiter, async (req, res) => {
     try {
         const { email, otp, newPassword } = req.body;
         const user = await User_1.User.findOne({

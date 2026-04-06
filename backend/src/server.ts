@@ -8,6 +8,9 @@ import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/auth';
 import offerRoutes from './routes/offers';
 import enquiryRoutes from './routes/enquiries';
+import feedbackRoutes from './routes/feedback';
+import placementsRoutes from './routes/placements';
+import analyticsRoutes from './routes/analytics';
 
 dotenv.config();
 
@@ -68,6 +71,9 @@ app.use('/api', apiLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/offers', offerRoutes);
 app.use('/api/enquiries', enquiryRoutes);
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api/placements', placementsRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Database Connection
 mongoose
