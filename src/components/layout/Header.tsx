@@ -46,7 +46,7 @@ const Header = () => {
               "w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 overflow-hidden",
               scrolled ? "bg-primary" : "bg-white/10 backdrop-blur-sm"
             )}>
-              <img src="/akshaya-logo.png" alt="AA Logo" className="w-full h-full object-cover" />
+              <img src="/logo.png" alt="AA Logo" className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-col">
               <span className={cn(

@@ -37,7 +37,7 @@ const Footer = () => {
           <div className="lg:col-span-4">
             <Link to="/" className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center overflow-hidden">
-                <img src="/akshaya-logo.png" alt="AA Logo" className="w-full h-full object-cover" />
+                <img src="/logo.png" alt="AA Logo" className="w-full h-full object-cover" />
               </div>
               <div>
                 <span className="text-xl font-bold block">
