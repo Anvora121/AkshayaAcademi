@@ -13,6 +13,9 @@ const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const auth_1 = __importDefault(require("./routes/auth"));
 const offers_1 = __importDefault(require("./routes/offers"));
 const enquiries_1 = __importDefault(require("./routes/enquiries"));
+const feedback_1 = __importDefault(require("./routes/feedback"));
+const placements_1 = __importDefault(require("./routes/placements"));
+const analytics_1 = __importDefault(require("./routes/analytics"));
 dotenv_1.default.config();
 // Validate required environment variables at startup
 const requiredEnvVars = ['JWT_SECRET', 'MONGODB_URI'];
@@ -28,6 +31,7 @@ const PORT = process.env.PORT || 5000;
 const allowedOrigins = [
     process.env.FRONTEND_URL || 'http://localhost:5173',
     'http://localhost:8081',
+    'http://localhost:8080',
     'https://akshayaakademics.com',
     'https://www.akshayaakademics.com',
 ];
@@ -63,6 +67,9 @@ app.use('/api', apiLimiter);
 app.use('/api/auth', auth_1.default);
 app.use('/api/offers', offers_1.default);
 app.use('/api/enquiries', enquiries_1.default);
+app.use('/api/feedback', feedback_1.default);
+app.use('/api/placements', placements_1.default);
+app.use('/api/analytics', analytics_1.default);
 // Database Connection
 mongoose_1.default
     .connect(process.env.MONGODB_URI)

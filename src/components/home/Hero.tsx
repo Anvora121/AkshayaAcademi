@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Users, Award, Globe, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { PLATFORM_TAGLINE } from "@/data/siteConfig";
 
 const Hero = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -177,7 +178,7 @@ const Hero = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-lg md:text-xl text-white/70 mb-10 max-w-xl leading-relaxed"
             >
-              Your complete overseas education & career enablement partner. Expert guidance from admission to placement across 11 countries.
+              {PLATFORM_TAGLINE}
             </motion.p>
 
             {/* CTAs */}

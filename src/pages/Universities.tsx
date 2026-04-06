@@ -14,10 +14,18 @@ import {
   ChevronRight,
   Users,
   TrendingUp,
-  Filter
+  Filter,
+  SortAsc,
+  SortDesc,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { universitiesData, countryImages, countries } from "@/data/universities";
+import { getAverageRating } from "@/data/mockFeedback";
+import RankingBadge from "@/components/ui/RankingBadge";
+import FeaturedBadge from "@/components/ui/FeaturedBadge";
+
+type RankFilter = "all" | "top10" | "top50" | "top100";
+type SortOrder = "default" | "rank-asc" | "rank-desc";
 
 const UniversitiesPage = () => {
   const [searchParams] = useSearchParams();
@@ -25,16 +33,18 @@ const UniversitiesPage = () => {
   const [activeCountry, setActiveCountry] = useState(initialCountry);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
+  const [rankFilter, setRankFilter] = useState<RankFilter>("all");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("default");
+  const [showFilters, setShowFilters] = useState(false);
 
   usePageMeta({
     title: "Explore Universities",
-    description: "Discover 500+ top-ranked universities across 11 countries. Filter by country, course, and more to find your perfect match.",
+    description: "Discover 330+ top-ranked universities across 11 countries. Filter by country, rank, and more to find your perfect match.",
     canonicalPath: "/universities",
   });
 
-  // For "All Countries" - rotate through country backgrounds
-  const countryKeys = Object.keys(countryImages).filter(k => k !== 'all');
-
+  // Rotate backgrounds when "all" is selected
+  const countryKeys = Object.keys(countryImages).filter((k) => k !== "all");
   useEffect(() => {
     if (activeCountry === "all") {
       const interval = setInterval(() => {
@@ -44,22 +54,52 @@ const UniversitiesPage = () => {
     }
   }, [activeCountry]);
 
-  const currentBackground = activeCountry === "all"
-    ? countryImages[countryKeys[currentBgIndex]]
-    : countryImages[activeCountry] || countryImages.all;
+  const currentBackground =
+    activeCountry === "all"
+      ? countryImages[countryKeys[currentBgIndex]]
+      : countryImages[activeCountry] || countryImages.all;
 
-  const filteredUniversities = universitiesData.filter(uni => {
-    const matchesCountry = activeCountry === "all" || uni.country === activeCountry;
-    const matchesSearch = uni.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      uni.courses.some(c => c.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      uni.location.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCountry && matchesSearch;
-  });
+  // Filter + sort
+  const filteredUniversities = universitiesData
+    .filter((uni) => {
+      const matchesCountry = activeCountry === "all" || uni.country === activeCountry;
+      const matchesSearch =
+        uni.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        uni.courses.some((c) => c.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        uni.location.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesRank =
+        rankFilter === "all"
+          ? true
+          : rankFilter === "top10"
+          ? uni.ranking <= 10
+          : rankFilter === "top50"
+          ? uni.ranking <= 50
+          : uni.ranking <= 100;
+      return matchesCountry && matchesSearch && matchesRank;
+    })
+    .sort((a, b) => {
+      if (sortOrder === "rank-asc") return a.ranking - b.ranking;
+      if (sortOrder === "rank-desc") return b.ranking - a.ranking;
+      return 0;
+    });
+
+  const featuredCount = filteredUniversities.filter((u) => u.featured).length;
 
   const getCountryFlag = (countryId: string) => {
-    const country = countries.find(c => c.id === countryId);
+    const country = countries.find((c) => c.id === countryId);
     return country?.flag || "🌍";
   };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setRankFilter("all");
+    setSortOrder("default");
+    setSearchQuery("");
+    setActiveCountry("all");
+  };
+
+  const hasActiveFilters =
+    rankFilter !== "all" || sortOrder !== "default" || searchQuery !== "" || activeCountry !== "all";
 
   return (
     <div className="min-h-screen bg-background">
@@ -113,7 +153,7 @@ const UniversitiesPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="max-w-2xl mx-auto mb-10"
+              className="max-w-2xl mx-auto mb-8"
             >
               <div className="relative">
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -132,7 +172,7 @@ const UniversitiesPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="flex flex-wrap justify-center gap-2"
+              className="flex flex-wrap justify-center gap-2 mb-6"
             >
               {countries.map((c) => (
                 <button
@@ -150,6 +190,58 @@ const UniversitiesPage = () => {
                 </button>
               ))}
             </motion.div>
+
+            {/* Rank + Sort Filter Row */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+              className="flex flex-wrap justify-center items-center gap-3"
+            >
+              {/* Rank filter pills */}
+              <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-1.5">
+                <Filter className="w-3.5 h-3.5 text-white/60 shrink-0" />
+                {(["all", "top10", "top50", "top100"] as RankFilter[]).map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setRankFilter(r)}
+                    className={cn(
+                      "px-3 py-1 rounded-lg text-xs font-semibold transition-all",
+                      rankFilter === r
+                        ? "bg-accent text-white"
+                        : "text-white/70 hover:text-white hover:bg-white/10"
+                    )}
+                  >
+                    {r === "all" ? "All Ranks" : r === "top10" ? "Top 10" : r === "top50" ? "Top 50" : "Top 100"}
+                  </button>
+                ))}
+              </div>
+
+              {/* Sort */}
+              <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-1.5">
+                {([
+                  { id: "default", label: "Default", Icon: null },
+                  { id: "rank-asc", label: "Rank ↑", Icon: SortAsc },
+                  { id: "rank-desc", label: "Rank ↓", Icon: SortDesc },
+                ] as { id: SortOrder; label: string; Icon: React.ComponentType<{ className?: string }> | null }[]).map(
+                  ({ id, label, Icon }) => (
+                    <button
+                      key={id}
+                      onClick={() => setSortOrder(id)}
+                      className={cn(
+                        "flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold transition-all",
+                        sortOrder === id
+                          ? "bg-accent text-white"
+                          : "text-white/70 hover:text-white hover:bg-white/10"
+                      )}
+                    >
+                      {Icon && <Icon className="w-3.5 h-3.5" />}
+                      {label}
+                    </button>
+                  )
+                )}
+              </div>
+            </motion.div>
           </div>
 
           {/* Bottom Wave */}
@@ -166,91 +258,156 @@ const UniversitiesPage = () => {
         {/* Universities Grid */}
         <section className="py-12">
           <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-8">
+            {/* Results bar */}
+            <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
               <p className="text-muted-foreground">
-                Showing <span className="font-semibold text-foreground">{filteredUniversities.length}</span> universities
+                Showing{" "}
+                <span className="font-semibold text-foreground">{filteredUniversities.length}</span> universities
+                {featuredCount > 0 && (
+                  <span className="ml-2 text-amber-500 font-medium text-sm">· {featuredCount} featured</span>
+                )}
                 {activeCountry !== "all" && (
                   <span className="ml-1">
-                    in <span className="font-semibold text-foreground">{countries.find(c => c.id === activeCountry)?.name}</span>
+                    {" "}in{" "}
+                    <span className="font-semibold text-foreground">
+                      {countries.find((c) => c.id === activeCountry)?.name}
+                    </span>
                   </span>
                 )}
               </p>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="text-xs text-muted-foreground hover:text-accent transition-colors underline underline-offset-2"
+                >
+                  Clear all filters
+                </button>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredUniversities.map((uni, index) => (
-                <motion.div
-                  key={`${uni.id}-${index}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: index * 0.03 }}
-                >
-                  <Link to={`/universities/${uni.id}`} className="block h-full">
-                    <div className="university-card group h-full flex flex-col">
-                      {/* Campus Image */}
-                      <div className="relative h-48 overflow-hidden">
-                        <img
-                          src={uni.image}
-                          alt={uni.name}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            {filteredUniversities.length === 0 ? (
+              <div className="text-center py-24">
+                <GraduationCap className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+                <p className="text-foreground font-semibold mb-2">No universities found</p>
+                <p className="text-muted-foreground text-sm mb-6">Try adjusting your filters or search query</p>
+                <Button variant="outline" size="sm" onClick={clearFilters}>
+                  Clear Filters
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredUniversities.map((uni, index) => {
+                  const avgRating = getAverageRating(uni.id);
+                  return (
+                    <motion.div
+                      key={`${uni.id}-${index}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4, delay: index * 0.03 }}
+                    >
+                      <Link to={`/universities/${uni.id}`} className="block h-full">
+                        <div className="university-card group h-full flex flex-col">
+                          {/* Campus Image */}
+                          <div className="relative h-48 overflow-hidden">
+                            <img
+                              src={uni.image}
+                              alt={uni.name}
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-                        {/* Ranking Badge */}
-                        <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-accent/90 backdrop-blur-sm text-white text-xs font-bold">
-                          <Star className="w-3 h-3 fill-white" />
-                          #{uni.ranking}
-                        </div>
+                            {/* Animated Ranking Badge */}
+                            <div className="absolute top-3 right-3">
+                              <RankingBadge
+                                rank={uni.ranking}
+                                source={uni.rankingSource}
+                                updatedAt={uni.rankingUpdatedAt}
+                                size="sm"
+                                animate={true}
+                              />
+                            </div>
 
-                        {/* Logo Placeholder */}
-                        <div className="absolute bottom-4 left-4 w-14 h-14 rounded-xl bg-white shadow-lg flex items-center justify-center text-primary font-bold text-xs">
-                          {uni.logo}
-                        </div>
-                      </div>
+                            {/* Featured Badge */}
+                            {uni.featured && (
+                              <div className="absolute top-3 left-3">
+                                <FeaturedBadge size="sm" />
+                              </div>
+                            )}
 
-                      {/* Content */}
-                      <div className="p-5 flex-grow flex flex-col">
-                        <div className="flex items-start gap-2 mb-3">
-                          <span className="text-lg">{getCountryFlag(uni.country)}</span>
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-lg text-foreground mb-1 group-hover:text-accent transition-colors line-clamp-2">
-                              {uni.name}
-                            </h3>
-                            <p className="text-sm text-muted-foreground flex items-center gap-1">
-                              <MapPin className="w-3.5 h-3.5" />
-                              {uni.location}
-                            </p>
+                            {/* Logo */}
+                            <div className="absolute bottom-4 left-4 w-14 h-14 rounded-xl bg-white shadow-lg overflow-hidden flex items-center justify-center">
+                              {uni.logo.startsWith('http') ? (
+                                <img
+                                  src={uni.logo}
+                                  alt={`${uni.name} logo`}
+                                  className="w-full h-full object-contain p-1"
+                                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement)!.style.display = 'flex'; }}
+                                />
+                              ) : null}
+                              <span
+                                className="text-primary font-bold text-xs"
+                                style={{ display: uni.logo.startsWith('http') ? 'none' : 'flex' }}
+                              >
+                                {uni.logo.startsWith('http') ? uni.name.split(' ').map(w => w[0]).join('').slice(0, 4) : uni.logo}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Content */}
+                          <div className="p-5 flex-grow flex flex-col">
+                            <div className="flex items-start gap-2 mb-3">
+                              <span className="text-lg">{getCountryFlag(uni.country)}</span>
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-lg text-foreground mb-1 group-hover:text-accent transition-colors line-clamp-2">
+                                  {uni.name}
+                                </h3>
+                                <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                  <MapPin className="w-3.5 h-3.5" />
+                                  {uni.location}
+                                </p>
+                              </div>
+                            </div>
+
+                            <p className="text-xs text-muted-foreground/60 uppercase tracking-wider mb-3">{uni.type}</p>
+
+                            {/* Rating */}
+                            {avgRating > 0 && (
+                              <div className="flex items-center gap-1.5 mb-3">
+                                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                                <span className="text-sm font-medium text-foreground">{avgRating.toFixed(1)}</span>
+                                <span className="text-xs text-muted-foreground">student rating</span>
+                              </div>
+                            )}
+
+                            {/* Course tags */}
+                            <div className="flex flex-wrap gap-1.5 mb-4">
+                              {uni.courses.slice(0, 3).map((course, i) => (
+                                <span key={i} className="px-2 py-1 rounded-md bg-secondary text-xs font-medium text-secondary-foreground">
+                                  {course}
+                                </span>
+                              ))}
+                              {uni.courses.length > 3 && (
+                                <span className="px-2 py-1 rounded-md bg-secondary text-xs font-medium text-muted-foreground">
+                                  +{uni.courses.length - 3}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="mt-auto pt-4 border-t border-border">
+                              <Button variant="outline" size="sm" className="w-full group/btn">
+                                View Details
+                                <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
-
-                        <p className="text-xs text-muted-foreground/60 uppercase tracking-wider mb-3">{uni.type}</p>
-
-                        <div className="flex flex-wrap gap-1.5 mb-4">
-                          {uni.courses.slice(0, 3).map((course, i) => (
-                            <span key={i} className="px-2 py-1 rounded-md bg-secondary text-xs font-medium text-secondary-foreground">
-                              {course}
-                            </span>
-                          ))}
-                          {uni.courses.length > 3 && (
-                            <span className="px-2 py-1 rounded-md bg-secondary text-xs font-medium text-muted-foreground">
-                              +{uni.courses.length - 3}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="mt-auto pt-4 border-t border-border">
-                          <Button variant="outline" size="sm" className="w-full group/btn">
-                            Check Eligibility
-                            <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
 

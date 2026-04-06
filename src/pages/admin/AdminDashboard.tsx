@@ -1,12 +1,22 @@
-import React from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { ArrowLeft, ShieldCheck, Terminal, LogOut, Activity } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Terminal, LogOut, Activity, BarChart2, Briefcase } from 'lucide-react';
 import { OffersManager } from '../../components/admin/OffersManager';
+import AdminAnalytics from './AdminAnalytics';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
+
+type AdminTab = 'offers' | 'analytics';
 
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
+    const [activeTab, setActiveTab] = useState<AdminTab>('offers');
+
+    const tabs: { id: AdminTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+        { id: 'offers', label: 'Offers & Applications', icon: Briefcase },
+        { id: 'analytics', label: 'Analytics', icon: BarChart2 },
+    ];
 
     return (
         <div className="min-h-screen bg-background relative overflow-hidden">
@@ -21,7 +31,7 @@ const AdminDashboard = () => {
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6"
+                        className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6"
                     >
                         <div>
                             <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 group text-sm font-medium">
@@ -55,7 +65,7 @@ const AdminDashboard = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="premium-card p-6 mb-12 flex flex-col md:flex-row items-center justify-between gap-6 border-blue-500/20 bg-blue-500/5"
+                        className="premium-card p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 border-blue-500/20 bg-blue-500/5"
                     >
                         <div className="flex items-center gap-4">
                             <div className="p-3 rounded-xl bg-blue-500/20 text-blue-500">
@@ -75,13 +85,35 @@ const AdminDashboard = () => {
                         </div>
                     </motion.div>
 
+                    {/* Tab Navigation */}
+                    <div className="flex gap-1 mb-8 p-1 rounded-xl bg-secondary/50 border border-border w-fit">
+                        {tabs.map(({ id, label, icon: Icon }) => (
+                            <button
+                                key={id}
+                                id={`admin-tab-${id}`}
+                                onClick={() => setActiveTab(id)}
+                                className={cn(
+                                    "flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all",
+                                    activeTab === id
+                                        ? "bg-background text-foreground shadow-sm"
+                                        : "text-muted-foreground hover:text-foreground"
+                                )}
+                            >
+                                <Icon className="w-4 h-4" />
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+
                     {/* Content */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.2 }}
+                        key={activeTab}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2 }}
                     >
-                        <OffersManager />
+                        {activeTab === 'offers' && <OffersManager />}
+                        {activeTab === 'analytics' && <AdminAnalytics />}
                     </motion.div>
                 </div>
             </div>
