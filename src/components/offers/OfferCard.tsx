@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/config';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -69,8 +70,7 @@ export const OfferCard: React.FC<OfferCardProps> = ({ offer }) => {
 
         setIsApplying(true);
         try {
-            const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-            const response = await fetch(`${VITE_API_URL}/api/offers/${offer._id}/apply`, {
+            const response = await fetch(`${API_BASE_URL}/offers/${offer._id}/apply`, {
                 method: 'POST',
                 credentials: 'include'
             });
