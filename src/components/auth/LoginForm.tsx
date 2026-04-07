@@ -13,6 +13,14 @@ const FEATURE_BULLETS = [
     { icon: <ShieldCheck className="w-5 h-5" />, text: 'Secured admissions & AI-powered visa guidance' },
 ];
 
+const navItems = [
+    { label: "Home", href: "/" },
+    { label: "Services", href: "/services" },
+    { label: "Countries", href: "/education" },
+    { label: "Universities", href: "/universities" },
+    { label: "Find Courses", href: "/courses" },
+];
+
 export const LoginForm = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -73,14 +81,30 @@ export const LoginForm = () => {
                 {/* Logo & Navigation */}
                 <div className="relative z-10 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-3 group">
-                        <div className="w-12 h-12 rounded-2xl bg-accent flex items-center justify-center shadow-xl shadow-accent/40 group-hover:scale-105 transition-transform duration-300">
-                            <GraduationCap className="w-7 h-7 text-white" />
+                        <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-accent overflow-hidden shadow-lg shadow-accent/20 transition-transform duration-300 group-hover:scale-105">
+                            <img src="/logo.png" alt="AA Logo" className="w-full h-full object-cover" />
                         </div>
-                        <div>
-                            <p className="text-xl font-black text-foreground tracking-tight leading-none">Akshaya</p>
-                            <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest mt-1">Akadmi</p>
+                        <div className="flex flex-col">
+                            <span className="text-xl font-bold tracking-tight text-foreground">
+                                Akshaya <span className="text-accent">Akademics</span>
+                            </span>
+                            <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground -mt-1">
+                                Global Education
+                            </span>
                         </div>
                     </Link>
+
+                    <nav className="flex items-center gap-1">
+                        {navItems.map((item) => (
+                            <Link
+                                key={item.href}
+                                to={item.href}
+                                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all duration-200"
+                            >
+                                {item.label}
+                            </Link>
+                        ))}
+                    </nav>
                 </div>
 
                 {/* Brand Hero Copy */}
