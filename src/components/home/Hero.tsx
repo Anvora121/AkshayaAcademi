@@ -7,6 +7,7 @@ import { PLATFORM_TAGLINE } from "@/data/siteConfig";
 
 const Hero = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [activeJourneyStep, setActiveJourneyStep] = useState(0);
 
   const stats = [
     { value: "10K+", label: "Students Placed", icon: Users },
@@ -27,6 +28,15 @@ const Hero = () => {
     { name: "Switzerland", flag: "🇨🇭", id: "switzerland" },
     { name: "Netherlands", flag: "🇳🇱", id: "netherlands" },
     { name: "Sweden", flag: "🇸🇪", id: "sweden" },
+  ];
+
+  const journeySteps = [
+    { title: "Explore", description: "Shortlist universities that match your goals." },
+    { title: "Apply", description: "Build strong applications with expert support." },
+    { title: "Visa", description: "Prepare documents and interviews for visa success." },
+    { title: "Study", description: "Get pre-departure guidance and settle into campus life." },
+    { title: "Work", description: "Explore internships and career opportunities abroad." },
+    { title: "Settle", description: "Get local help with accommodation and essentials." },
   ];
 
   // Real campus imagery from top universities
@@ -277,20 +287,48 @@ const Hero = () => {
               >
                 <p className="text-sm text-white/40 mb-4 font-medium uppercase tracking-wider">Your Journey</p>
                 <div className="flex items-center justify-between">
-                  {["Explore", "Apply", "Visa", "Study", "Work", "Settle"].map((step, index) => (
-                    <div key={step} className="flex items-center">
-                      <div className="flex flex-col items-center group cursor-pointer">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all group-hover:scale-110 ${index === 0 ? 'bg-[#FF6B2C] text-white' : 'bg-[#314A5D] text-white/50 group-hover:bg-[#3D5B71]'
-                          }`}>
+                  {journeySteps.map((step, index) => (
+                    <div key={step.title} className="flex items-center">
+                      <button
+                        type="button"
+                        onClick={() => setActiveJourneyStep(index)}
+                        onMouseEnter={() => setActiveJourneyStep(index)}
+                        onFocus={() => setActiveJourneyStep(index)}
+                        className="flex flex-col items-center group cursor-pointer focus:outline-none"
+                        aria-pressed={activeJourneyStep === index}
+                        aria-label={`Journey step ${index + 1}: ${step.title}`}
+                      >
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all group-hover:scale-110 ${
+                            activeJourneyStep === index
+                              ? "bg-[#FF6B2C] text-white"
+                              : "bg-[#314A5D] text-white/50 group-hover:bg-[#3D5B71]"
+                          }`}
+                        >
                           {index + 1}
                         </div>
-                        <span className="text-[10px] sm:text-xs text-white/60 mt-2 hidden md:block group-hover:text-white transition-colors">{step}</span>
-                      </div>
+                        <span
+                          className={`text-[10px] sm:text-xs mt-2 hidden md:block transition-colors ${
+                            activeJourneyStep === index ? "text-white" : "text-white/60 group-hover:text-white"
+                          }`}
+                        >
+                          {step.title}
+                        </span>
+                      </button>
                       {index < 5 && (
                         <div className="w-6 md:w-12 h-px bg-[#314A5D] mx-1 md:mx-4 -translate-y-2 lg:-translate-y-3" />
                       )}
                     </div>
                   ))}
+                </div>
+
+                <div className="mt-4 rounded-xl bg-white/5 border border-white/10 px-4 py-3">
+                  <p className="text-xs text-white/50 uppercase tracking-wider font-semibold mb-1">
+                    Step {activeJourneyStep + 1}: {journeySteps[activeJourneyStep].title}
+                  </p>
+                  <p className="text-sm text-white/80 leading-relaxed">
+                    {journeySteps[activeJourneyStep].description}
+                  </p>
                 </div>
               </motion.div>
             </motion.div>
