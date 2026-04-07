@@ -23,7 +23,6 @@ import PremiumPlans from "./pages/PremiumPlans";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Unauthorized from "./pages/Unauthorized";
 import ForgotPassword from "./pages/ForgotPassword";
-import CourseDiscovery from "./pages/CourseDiscovery";
 import RegisterPage from "./pages/RegisterPage";
 
 const queryClient = new QueryClient();
@@ -57,7 +56,6 @@ const App = () => (
                             <Route path="/services" element={<Services />} />
                             <Route path="/education" element={<Education />} />
                             <Route path="/universities" element={<Universities />} />
-                            <Route path="/courses" element={<CourseDiscovery />} />
                             <Route path="/universities/:id" element={<UniversityDetail />} />
                             <Route path="/enquiry" element={<Enquiry />} />
                             <Route path="/premium-plans" element={<PremiumPlans />} />
