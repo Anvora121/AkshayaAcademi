@@ -106,6 +106,19 @@ const RegisterPage: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isExistingUser, setIsExistingUser] = useState(false);
 
+    const normalizeAuthError = (message?: string) => {
+        const msg = (message || '').toLowerCase();
+        if (
+            msg.includes('no token provided') ||
+            msg.includes('authorization denied') ||
+            msg.includes('token is not valid') ||
+            msg.includes('user not authenticated')
+        ) {
+            return 'Your session has expired. Please log in again.';
+        }
+        return message || 'Something went wrong. Please try again.';
+    };
+
     // Upload state
     const [uploadedFiles, setUploadedFiles] = useState<{
         resume: UploadedFile | null; transcript: UploadedFile | null; sop: UploadedFile | null;
@@ -161,7 +174,7 @@ const RegisterPage: React.FC = () => {
             toast.success('Account created! Let\'s complete your profile.');
             return true;
         } catch (err: any) {
-            toast.error(err.message || 'Registration failed. Please try again.');
+            toast.error(normalizeAuthError(err?.message));
             return false;
         } finally {
             setIsSaving(false);
@@ -212,7 +225,11 @@ const RegisterPage: React.FC = () => {
             }
             return true;
         } catch (err: any) {
-            toast.error(err.message || 'Failed to save your progress.');
+            const msg = normalizeAuthError(err?.message);
+            toast.error(msg);
+            if (msg.toLowerCase().includes('please log in again')) {
+                navigate('/login');
+            }
             return false;
         } finally {
             setIsSaving(false);
@@ -245,7 +262,11 @@ const RegisterPage: React.FC = () => {
             updateField(urlKey, data.url);
             toast.success(`${field.charAt(0).toUpperCase() + field.slice(1)} uploaded!`);
         } catch (err: any) {
-            toast.error(err.message || 'File upload failed.');
+            const msg = normalizeAuthError(err?.message);
+            toast.error(msg);
+            if (msg.toLowerCase().includes('please log in again')) {
+                navigate('/login');
+            }
         } finally {
             setUploading((u) => ({ ...u, [field]: false }));
         }
@@ -302,7 +323,7 @@ const RegisterPage: React.FC = () => {
             toast.success('🎉 Profile complete! Welcome to Akshaya Akadmi.');
             navigate('/dashboard/user', { replace: true });
         } catch (err: any) {
-            toast.error('Submission failed. Please try again.');
+            toast.error(normalizeAuthError(err?.message));
         } finally {
             setIsSubmitting(false);
         }

@@ -1,5 +1,5 @@
-import React from 'react';
-import { User, Mail, Phone, Calendar, Users, Globe, Lock, ShieldCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, Mail, Phone, Calendar, Users, Globe, Lock, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface Step1Data {
@@ -48,6 +48,9 @@ const InputGroup: React.FC<{
 );
 
 export const Step1Personal: React.FC<Step1Props> = ({ data, onChange, errors, isExistingUser }) => {
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
     return (
         <div className="space-y-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -86,23 +89,43 @@ export const Step1Personal: React.FC<Step1Props> = ({ data, onChange, errors, is
                    </div>
 
                     <InputGroup label="Password" icon={<Lock className="w-4 h-4" />} error={errors.password} required>
-                        <input
-                            type="password"
-                            className={inputClass}
-                            value={data.password}
-                            onChange={(e) => onChange('password', e.target.value)}
-                            placeholder="Min. 8 characters"
-                        />
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                className={`${inputClass} pr-12`}
+                                value={data.password}
+                                onChange={(e) => onChange('password', e.target.value)}
+                                placeholder="Min. 8 characters"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-accent transition-colors"
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                            >
+                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            </button>
+                        </div>
                     </InputGroup>
 
                     <InputGroup label="Confirm Password" icon={<Lock className="w-4 h-4" />} error={errors.confirmPassword} required>
-                        <input
-                            type="password"
-                            className={inputClass}
-                            value={data.confirmPassword}
-                            onChange={(e) => onChange('confirmPassword', e.target.value)}
-                            placeholder="Repeat password"
-                        />
+                        <div className="relative">
+                            <input
+                                type={showConfirmPassword ? "text" : "password"}
+                                className={`${inputClass} pr-12`}
+                                value={data.confirmPassword}
+                                onChange={(e) => onChange('confirmPassword', e.target.value)}
+                                placeholder="Repeat password"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-accent transition-colors"
+                                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                            >
+                                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            </button>
+                        </div>
                     </InputGroup>
                 </div>
             )}

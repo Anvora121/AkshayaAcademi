@@ -30,21 +30,33 @@ if (missingEnvVars.length > 0) {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Restrict CORS to the configured frontend origin
+// Render/other proxies set X-Forwarded-* headers; trust first proxy hop.
+app.set('trust proxy', 1);
+
+// Restrict CORS to configured frontend origin(s)
+const envAllowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
 const allowedOrigins = [
-    process.env.FRONTEND_URL || 'http://localhost:5173',
+    ...envAllowedOrigins,
     'http://localhost:8081',
     'http://localhost:8080',
     'https://akshayaakademics.com',
     'https://www.akshayaakademics.com',
     'https://akshaya-academi.vercel.app',
-    'https://akshaya-academi-t2msxnyl3-balas-projects-b55556bc.vercel.app',
+];
+
+const allowedOriginPatterns = [
+    /^https:\/\/akshaya-academi(?:-[a-z0-9-]+)?\.vercel\.app$/i,
 ];
 
 const corsOptions: CorsOptions = {
     origin: (origin: string | undefined, callback: (err: Error | null, allowed?: boolean) => void) => {
         // Allow requests with no origin (e.g. mobile apps, curl, Postman)
-        if (!origin || allowedOrigins.includes(origin)) {
+        const isPatternAllowed = !!origin && allowedOriginPatterns.some((pattern) => pattern.test(origin));
+        if (!origin || allowedOrigins.includes(origin) || isPatternAllowed) {
             callback(null, true);
         } else {
             callback(new Error(`CORS policy: Origin ${origin} is not allowed.`));
