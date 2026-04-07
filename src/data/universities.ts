@@ -7,7 +7,6 @@ export interface University {
   ranking: number;
   rankingSource: 'QS' | 'THE';
   rankingUpdatedAt: string;
-  /** Whether this university is in the top-10 featured list for Indian students per country */
   featured: boolean;
   courses: string[];
   type: string;
@@ -3669,4 +3668,4 @@ export const universitiesData: University[] = [..._rawUniversitiesData, ...extra
   featured: FEATURED_IDS.has(u.id),
   rankingSource: 'QS' as const,
   rankingUpdatedAt: 'June 2024',
-}));
+}));
