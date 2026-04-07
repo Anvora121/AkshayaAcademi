@@ -5,6 +5,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, ArrowLeft, Sparkles, Globe, GraduationCap, Users, ShieldCheck, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 
 const FEATURE_BULLETS = [
     { icon: <Globe className="w-5 h-5" />, text: 'Access 1000+ top universities across the globe' },
@@ -18,7 +20,6 @@ const navItems = [
     { label: "Services", href: "/services" },
     { label: "Countries", href: "/education" },
     { label: "Universities", href: "/universities" },
-    { label: "Find Courses", href: "/courses" },
 ];
 
 export const LoginForm = () => {
@@ -69,7 +70,9 @@ export const LoginForm = () => {
     };
 
     return (
-        <div className="min-h-screen flex bg-background selection:bg-accent/20">
+        <div className="min-h-screen bg-background selection:bg-accent/20">
+            <Header />
+            <main className="flex pt-20 min-h-[calc(100vh-5rem)]">
             {/* ── Left Panel (Brand Storytelling) ── */}
             <div className="hidden lg:flex lg:w-[50%] relative overflow-hidden flex-col justify-between p-16">
                 {/* Background effects */}
@@ -287,6 +290,8 @@ export const LoginForm = () => {
                     </div>
                 </motion.div>
             </div>
+            </main>
+            <Footer />
         </div>
     );
 };
