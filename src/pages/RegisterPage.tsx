@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { API_BASE_URL } from '@/config';
 import { toast } from 'sonner';
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 import {
     User, MapPin, GraduationCap, FileText, CheckSquare, ArrowLeft, ArrowRight,
     Save, Sparkles, LogIn, CheckCircle2,
@@ -357,6 +359,7 @@ const RegisterPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-[#FDFDFF] selection:bg-accent/10">
+            <Header />
             {/* Background Decorations */}
             <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/5 rounded-full blur-[120px]" />
@@ -364,7 +367,7 @@ const RegisterPage: React.FC = () => {
                 <div className="absolute inset-0 grid-pattern opacity-[0.02]" />
             </div>
 
-            <div className="max-w-3xl mx-auto px-6 py-12">
+            <main className="max-w-3xl mx-auto px-6 py-12 pt-24">
                 {/* Navbar Area */}
                 <div className="flex items-center justify-between mb-12">
                     <Link
@@ -482,7 +485,8 @@ const RegisterPage: React.FC = () => {
                   <span className="w-1 h-1 bg-muted-foreground/20 rounded-full" />
                   <span>Secure 256-bit SSL</span>
                 </div>
-            </div>
+            </main>
+            <Footer />
         </div>
     );
 };
