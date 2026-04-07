@@ -33,21 +33,12 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = void 0;
+exports.Admin = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const UserSchema = new mongoose_1.Schema({
+const AdminSchema = new mongoose_1.Schema({
     name: { type: String, trim: true },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
     passwordHash: { type: String, required: true },
-    role: { type: String, required: true, enum: ['user', 'subscribed', 'admin'], default: 'user' },
-    phone: { type: String, trim: true },
-    dob: { type: Date },
-    nationality: { type: String, trim: true },
-    onboardingStep: { type: Number, default: 1 },
-    onboardingComplete: { type: Boolean, default: false },
-    subscriptionStatus: { type: String, required: true, enum: ['active', 'inactive'], default: 'inactive' },
-    subscriptionExpiry: { type: Date },
-    resetPasswordToken: { type: String },
-    resetPasswordExpires: { type: Date },
+    role: { type: String, default: 'admin', enum: ['admin'] },
 }, { timestamps: true });
-exports.User = mongoose_1.default.model('User', UserSchema);
+exports.Admin = mongoose_1.default.model('Admin', AdminSchema);

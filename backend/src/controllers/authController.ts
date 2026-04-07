@@ -50,16 +50,7 @@ export const register = async (req: Request, res: Response) => {
 
     const token = generateToken(user.id, user.role);
 
-<<<<<<< HEAD
     res.cookie('token', token, getAuthCookieOptions());
-=======
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-      maxAge: 24 * 60 * 60 * 1000,
-    });
->>>>>>> 37ef92fcf028864b95e7e9237984a4b7180b51b9
 
     res.status(201).json({
       message: 'User registered successfully',
@@ -88,16 +79,7 @@ export const login = async (req: Request, res: Response) => {
       const isMatch = await bcrypt.compare(password, admin.passwordHash);
       if (isMatch) {
         const token = generateToken(admin.id, 'admin');
-<<<<<<< HEAD
         res.cookie('token', token, getAuthCookieOptions());
-=======
-        res.cookie('token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-          maxAge: 24 * 60 * 60 * 1000,
-        });
->>>>>>> 37ef92fcf028864b95e7e9237984a4b7180b51b9
         return res.json({
           user: {
             id: admin.id,
@@ -122,16 +104,7 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const token = generateToken(user.id, user.role);
-<<<<<<< HEAD
     res.cookie('token', token, getAuthCookieOptions());
-=======
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-      maxAge: 24 * 60 * 60 * 1000,
-    });
->>>>>>> 37ef92fcf028864b95e7e9237984a4b7180b51b9
 
     res.json({
       user: {

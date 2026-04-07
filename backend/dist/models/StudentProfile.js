@@ -33,21 +33,40 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = void 0;
+exports.StudentProfile = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const UserSchema = new mongoose_1.Schema({
-    name: { type: String, trim: true },
-    email: { type: String, required: true, unique: true, trim: true, lowercase: true },
-    passwordHash: { type: String, required: true },
-    role: { type: String, required: true, enum: ['user', 'subscribed', 'admin'], default: 'user' },
+const TestScoresSchema = new mongoose_1.Schema({
+    ielts: { type: Number, min: 0, max: 9 },
+    toefl: { type: Number, min: 0, max: 120 },
+    gre: { type: Number, min: 260, max: 340 },
+    gmat: { type: Number, min: 200, max: 800 },
+    sat: { type: Number, min: 400, max: 1600 },
+    pte: { type: Number, min: 10, max: 90 },
+}, { _id: false });
+const StudentProfileSchema = new mongoose_1.Schema({
+    userId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User', required: true, unique: true, index: true },
+    // Personal details
     phone: { type: String, trim: true },
     dob: { type: Date },
+    gender: { type: String, enum: ['male', 'female', 'non-binary', 'prefer-not-to-say', ''] },
     nationality: { type: String, trim: true },
-    onboardingStep: { type: Number, default: 1 },
+    // Study preferences
+    domain: { type: String, trim: true },
+    preferredCountries: [{ type: String, trim: true }],
+    preferredUniversities: [{ type: String, trim: true }],
+    // Academic
+    ugDegree: { type: String, trim: true },
+    specialization: { type: String, trim: true },
+    college: { type: String, trim: true },
+    cgpa: { type: Number, min: 0, max: 10 },
+    backlogs: { type: Number, min: 0, default: 0 },
+    testScores: { type: TestScoresSchema, default: () => ({}) },
+    // Documents
+    resumeURL: { type: String },
+    transcriptURL: { type: String },
+    sopURL: { type: String },
+    // Onboarding progress
+    onboardingStep: { type: Number, default: 1, min: 1, max: 5 },
     onboardingComplete: { type: Boolean, default: false },
-    subscriptionStatus: { type: String, required: true, enum: ['active', 'inactive'], default: 'inactive' },
-    subscriptionExpiry: { type: Date },
-    resetPasswordToken: { type: String },
-    resetPasswordExpires: { type: Date },
 }, { timestamps: true });
-exports.User = mongoose_1.default.model('User', UserSchema);
+exports.StudentProfile = mongoose_1.default.model('StudentProfile', StudentProfileSchema);

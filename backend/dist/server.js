@@ -10,12 +10,16 @@ const helmet_1 = __importDefault(require("helmet"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
+const path_1 = __importDefault(require("path"));
 const auth_1 = __importDefault(require("./routes/auth"));
 const offers_1 = __importDefault(require("./routes/offers"));
 const enquiries_1 = __importDefault(require("./routes/enquiries"));
 const feedback_1 = __importDefault(require("./routes/feedback"));
 const placements_1 = __importDefault(require("./routes/placements"));
 const analytics_1 = __importDefault(require("./routes/analytics"));
+const universities_1 = __importDefault(require("./routes/universities"));
+const onboarding_1 = __importDefault(require("./routes/onboarding"));
+const uploads_1 = __importDefault(require("./routes/uploads"));
 dotenv_1.default.config();
 // Validate required environment variables at startup
 const requiredEnvVars = ['JWT_SECRET', 'MONGODB_URI'];
@@ -27,18 +31,29 @@ if (missingEnvVars.length > 0) {
 }
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
-// Restrict CORS to the configured frontend origin
+// Render/other proxies set X-Forwarded-* headers; trust first proxy hop.
+app.set('trust proxy', 1);
+// Restrict CORS to configured frontend origin(s)
+const envAllowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 const allowedOrigins = [
-    process.env.FRONTEND_URL || 'http://localhost:5173',
+    ...envAllowedOrigins,
     'http://localhost:8081',
     'http://localhost:8080',
     'https://akshayaakademics.com',
     'https://www.akshayaakademics.com',
+    'https://akshaya-academi.vercel.app',
+];
+const allowedOriginPatterns = [
+    /^https:\/\/akshaya-academi(?:-[a-z0-9-]+)?\.vercel\.app$/i,
 ];
 const corsOptions = {
     origin: (origin, callback) => {
         // Allow requests with no origin (e.g. mobile apps, curl, Postman)
-        if (!origin || allowedOrigins.includes(origin)) {
+        const isPatternAllowed = !!origin && allowedOriginPatterns.some((pattern) => pattern.test(origin));
+        if (!origin || allowedOrigins.includes(origin) || isPatternAllowed) {
             callback(null, true);
         }
         else {
@@ -63,6 +78,8 @@ const apiLimiter = (0, express_rate_limit_1.default)({
 // Apply rate limiter to all /api routes
 app.use('/api', apiLimiter);
 // Auth routes will have a stricter limiter defined in the auth router
+// Serve uploaded files as static assets
+app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../../uploads')));
 // Routes
 app.use('/api/auth', auth_1.default);
 app.use('/api/offers', offers_1.default);
@@ -70,6 +87,9 @@ app.use('/api/enquiries', enquiries_1.default);
 app.use('/api/feedback', feedback_1.default);
 app.use('/api/placements', placements_1.default);
 app.use('/api/analytics', analytics_1.default);
+app.use('/api/universities', universities_1.default);
+app.use('/api/onboarding', onboarding_1.default);
+app.use('/api/uploads', uploads_1.default);
 // Database Connection
 mongoose_1.default
     .connect(process.env.MONGODB_URI)

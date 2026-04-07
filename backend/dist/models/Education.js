@@ -33,21 +33,23 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = void 0;
+exports.Education = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const UserSchema = new mongoose_1.Schema({
-    name: { type: String, trim: true },
-    email: { type: String, required: true, unique: true, trim: true, lowercase: true },
-    passwordHash: { type: String, required: true },
-    role: { type: String, required: true, enum: ['user', 'subscribed', 'admin'], default: 'user' },
-    phone: { type: String, trim: true },
-    dob: { type: Date },
-    nationality: { type: String, trim: true },
-    onboardingStep: { type: Number, default: 1 },
-    onboardingComplete: { type: Boolean, default: false },
-    subscriptionStatus: { type: String, required: true, enum: ['active', 'inactive'], default: 'inactive' },
-    subscriptionExpiry: { type: Date },
-    resetPasswordToken: { type: String },
-    resetPasswordExpires: { type: Date },
+const TestScoresSchema = new mongoose_1.Schema({
+    ielts: { type: Number, min: 0, max: 9 },
+    toefl: { type: Number, min: 0, max: 120 },
+    gre: { type: Number, min: 260, max: 340 },
+    gmat: { type: Number, min: 200, max: 800 },
+    sat: { type: Number, min: 400, max: 1600 },
+    pte: { type: Number, min: 10, max: 90 },
+}, { _id: false });
+const EducationSchema = new mongoose_1.Schema({
+    userId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User', required: true, unique: true, index: true },
+    degree: { type: String, trim: true, required: true },
+    specialization: { type: String, trim: true },
+    college: { type: String, trim: true, required: true },
+    cgpa: { type: Number, min: 0, max: 10, required: true },
+    backlogs: { type: Number, min: 0, default: 0 },
+    testScores: { type: TestScoresSchema, default: () => ({}) },
 }, { timestamps: true });
-exports.User = mongoose_1.default.model('User', UserSchema);
+exports.Education = mongoose_1.default.model('Education', EducationSchema);

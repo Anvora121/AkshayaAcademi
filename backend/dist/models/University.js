@@ -33,21 +33,38 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = void 0;
+exports.University = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const UserSchema = new mongoose_1.Schema({
-    name: { type: String, trim: true },
-    email: { type: String, required: true, unique: true, trim: true, lowercase: true },
-    passwordHash: { type: String, required: true },
-    role: { type: String, required: true, enum: ['user', 'subscribed', 'admin'], default: 'user' },
-    phone: { type: String, trim: true },
-    dob: { type: Date },
-    nationality: { type: String, trim: true },
-    onboardingStep: { type: Number, default: 1 },
-    onboardingComplete: { type: Boolean, default: false },
-    subscriptionStatus: { type: String, required: true, enum: ['active', 'inactive'], default: 'inactive' },
-    subscriptionExpiry: { type: Date },
-    resetPasswordToken: { type: String },
-    resetPasswordExpires: { type: Date },
+const UniversitySchema = new mongoose_1.Schema({
+    id: { type: String, required: true, unique: true, index: true },
+    name: { type: String, required: true, trim: true },
+    country: { type: String, required: true, index: true },
+    countryName: { type: String, required: true },
+    location: { type: String, required: true },
+    ranking: { type: Number, required: true, index: true },
+    rankingSource: { type: String, required: true, enum: ['QS', 'THE'] },
+    rankingUpdatedAt: { type: String, required: true },
+    featured: { type: Boolean, default: false, index: true },
+    type: { type: String },
+    logo: { type: String },
+    image: { type: String },
+    description: { type: String },
+    founded: { type: String },
+    students: { type: String },
+    acceptanceRate: { type: String },
+    tuitionRange: { type: String },
+    requirements: {
+        gpa: { type: String },
+        ielts: { type: String },
+        toefl: { type: String },
+        gre: { type: String },
+        gmat: { type: String },
+        other: { type: String },
+    },
+    careerOutcomes: {
+        employmentRate: { type: String },
+        avgSalary: { type: String },
+        topEmployers: [{ type: String }],
+    },
 }, { timestamps: true });
-exports.User = mongoose_1.default.model('User', UserSchema);
+exports.University = mongoose_1.default.model('University', UniversitySchema);
