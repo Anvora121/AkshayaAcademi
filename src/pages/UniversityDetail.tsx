@@ -32,6 +32,7 @@ import RankingBadge from "@/components/ui/RankingBadge";
 import FeaturedBadge from "@/components/ui/FeaturedBadge";
 import FeedbackList from "@/components/university/FeedbackList";
 import PlacementOffersTable from "@/components/university/PlacementOffersTable";
+import { useUniversity } from "@/hooks/useUniversities";
 
 type Tab = "overview" | "placements" | "reviews";
 
@@ -43,7 +44,7 @@ const UniversityDetailPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
-  const university = universitiesData.find((u) => u.id === id);
+  const { data: university, isLoading } = useUniversity(id || "");
 
   usePageMeta({
     title: university ? university.name : "University Not Found",
@@ -59,6 +60,21 @@ const UniversityDetailPage = () => {
       setIsSubmitted(true);
     }, 1500);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-32 pb-20 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+             <div className="w-12 h-12 rounded-full border-4 border-accent border-t-transparent animate-spin" />
+             <p className="text-muted-foreground font-medium">Loading university profiles...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!university) {
     return (
@@ -191,19 +207,19 @@ const UniversityDetailPage = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="glass-dark rounded-xl p-4">
                   <p className="text-sm text-white/50 mb-1">Founded</p>
-                  <p className="text-xl font-bold text-white">{university.founded}</p>
+                  <p className="text-xl font-bold text-white">{university.founded || "N/A"}</p>
                 </div>
                 <div className="glass-dark rounded-xl p-4">
                   <p className="text-sm text-white/50 mb-1">Students</p>
-                  <p className="text-xl font-bold text-white">{university.students}</p>
+                  <p className="text-xl font-bold text-white">{university.students || "N/A"}</p>
                 </div>
                 <div className="glass-dark rounded-xl p-4">
                   <p className="text-sm text-white/50 mb-1">Acceptance Rate</p>
-                  <p className="text-xl font-bold text-white">{university.acceptanceRate}</p>
+                  <p className="text-xl font-bold text-white">{university.acceptanceRate || "N/A"}</p>
                 </div>
                 <div className="glass-dark rounded-xl p-4">
                   <p className="text-sm text-white/50 mb-1">Tuition</p>
-                  <p className="text-xl font-bold text-white">{university.tuitionRange}</p>
+                  <p className="text-xl font-bold text-white">{university.tuitionRange || "N/A"}</p>
                 </div>
               </div>
             </motion.div>
@@ -271,14 +287,14 @@ const UniversityDetailPage = () => {
                           <CheckCircle className="w-5 h-5 text-success shrink-0 mt-0.5" />
                           <div>
                             <p className="font-medium text-foreground">Global Network</p>
-                            <p className="text-sm text-muted-foreground">Access to {university.students} alumni worldwide</p>
+                            <p className="text-sm text-muted-foreground">Access to {university.students || "Thousands"} of alumni worldwide</p>
                           </div>
                         </div>
                         <div className="flex items-start gap-3">
                           <CheckCircle className="w-5 h-5 text-success shrink-0 mt-0.5" />
                           <div>
                             <p className="font-medium text-foreground">Career Support</p>
-                            <p className="text-sm text-muted-foreground">{university.careerOutcomes.employmentRate} employment rate</p>
+                            <p className="text-sm text-muted-foreground">{university.careerOutcomes?.employmentRate || "High"} employment rate</p>
                           </div>
                         </div>
                       </div>
@@ -293,10 +309,10 @@ const UniversityDetailPage = () => {
                     >
                       <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
                         <BookOpen className="w-6 h-6 text-accent" />
-                        Popular Programs
+                        Available Programs
                       </h2>
                       <div className="space-y-4">
-                        {university.popularPrograms.map((program, index) => (
+                        {university.courses.map((program, index) => (
                           <div key={index} className="p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors">
                             <div className="flex items-start justify-between gap-4">
                               <div>
@@ -307,24 +323,20 @@ const UniversityDetailPage = () => {
                                     {program.duration}
                                   </span>
                                   <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-medium">
-                                    {program.type}
+                                    {program.degreeLevel}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <DollarSign className="w-4 h-4" />
+                                    {program.tuitionOriginal}
                                   </span>
                                 </div>
                               </div>
-                              <Button variant="outline" size="sm">Learn More</Button>
+                              <Link to={`/enquiry?course=${program.name}&university=${university.name}`}>
+                                <Button variant="outline" size="sm">Enquire Now</Button>
+                              </Link>
                             </div>
                           </div>
                         ))}
-                      </div>
-                      <div className="mt-6 pt-6 border-t border-border">
-                        <h4 className="text-sm font-medium text-muted-foreground mb-3">All Available Courses</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {university.courses.map((course, i) => (
-                            <span key={i} className="px-3 py-1.5 rounded-lg bg-secondary text-sm font-medium text-secondary-foreground">
-                              {course}
-                            </span>
-                          ))}
-                        </div>
                       </div>
                     </motion.div>
 
@@ -342,27 +354,27 @@ const UniversityDetailPage = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="p-4 rounded-xl bg-secondary/50">
                           <p className="text-sm text-muted-foreground mb-1">Minimum GPA</p>
-                          <p className="text-2xl font-bold text-foreground">{university.requirements.gpa}</p>
-                          <Progress value={parseFloat(university.requirements.gpa) / 4 * 100} className="mt-2 h-2" />
+                          <p className="text-2xl font-bold text-foreground">{university.requirements?.gpa || "N/A"}</p>
+                          <Progress value={university.requirements ? (parseFloat(university.requirements.gpa) / 4 * 100) : 0} className="mt-2 h-2" />
                         </div>
                         <div className="p-4 rounded-xl bg-secondary/50">
                           <p className="text-sm text-muted-foreground mb-1">IELTS Score</p>
-                          <p className="text-2xl font-bold text-foreground">{university.requirements.ielts}</p>
-                          <Progress value={parseFloat(university.requirements.ielts) / 9 * 100} className="mt-2 h-2" />
+                          <p className="text-2xl font-bold text-foreground">{university.requirements?.ielts || "N/A"}</p>
+                          <Progress value={university.requirements ? (parseFloat(university.requirements.ielts) / 9 * 100) : 0} className="mt-2 h-2" />
                         </div>
                         <div className="p-4 rounded-xl bg-secondary/50">
                           <p className="text-sm text-muted-foreground mb-1">TOEFL Score</p>
-                          <p className="text-2xl font-bold text-foreground">{university.requirements.toefl}</p>
-                          <Progress value={parseFloat(university.requirements.toefl) / 120 * 100} className="mt-2 h-2" />
+                          <p className="text-2xl font-bold text-foreground">{university.requirements?.toefl || "N/A"}</p>
+                          <Progress value={university.requirements ? (parseFloat(university.requirements.toefl) / 120 * 100) : 0} className="mt-2 h-2" />
                         </div>
-                        {university.requirements.gre && (
+                        {university.requirements?.gre && (
                           <div className="p-4 rounded-xl bg-secondary/50">
                             <p className="text-sm text-muted-foreground mb-1">GRE Score</p>
                             <p className="text-2xl font-bold text-foreground">{university.requirements.gre}</p>
                             <Progress value={parseFloat(university.requirements.gre.replace('+', '')) / 340 * 100} className="mt-2 h-2" />
                           </div>
                         )}
-                        {university.requirements.gmat && (
+                        {university.requirements?.gmat && (
                           <div className="p-4 rounded-xl bg-secondary/50">
                             <p className="text-sm text-muted-foreground mb-1">GMAT Score</p>
                             <p className="text-2xl font-bold text-foreground">{university.requirements.gmat}</p>
@@ -370,7 +382,7 @@ const UniversityDetailPage = () => {
                           </div>
                         )}
                       </div>
-                      {university.requirements.other && (
+                      {university.requirements?.other && (
                         <div className="mt-4 p-4 rounded-xl bg-accent/10 border border-accent/20">
                           <p className="text-sm font-medium text-accent">{university.requirements.other}</p>
                         </div>
@@ -391,25 +403,27 @@ const UniversityDetailPage = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div className="p-6 rounded-xl bg-success/10 border border-success/20 text-center">
                           <TrendingUp className="w-8 h-8 text-success mx-auto mb-2" />
-                          <p className="text-3xl font-bold text-foreground">{university.careerOutcomes.employmentRate}</p>
+                          <p className="text-3xl font-bold text-foreground">{university.careerOutcomes?.employmentRate || "N/A"}</p>
                           <p className="text-sm text-muted-foreground">Employment Rate</p>
                         </div>
                         <div className="p-6 rounded-xl bg-accent/10 border border-accent/20 text-center">
                           <DollarSign className="w-8 h-8 text-accent mx-auto mb-2" />
-                          <p className="text-3xl font-bold text-foreground">{university.careerOutcomes.avgSalary}</p>
+                          <p className="text-3xl font-bold text-foreground">{university.careerOutcomes?.avgSalary || "N/A"}</p>
                           <p className="text-sm text-muted-foreground">Average Starting Salary</p>
                         </div>
                       </div>
-                      <div>
-                        <h4 className="text-sm font-medium text-muted-foreground mb-3">Top Employers</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {university.careerOutcomes.topEmployers.map((employer, i) => (
-                            <span key={i} className="px-4 py-2 rounded-lg bg-secondary text-sm font-medium text-foreground">
-                              {employer}
-                            </span>
-                          ))}
+                      {university.careerOutcomes?.topEmployers && (
+                        <div>
+                          <h4 className="text-sm font-medium text-muted-foreground mb-3">Top Employers</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {university.careerOutcomes.topEmployers.map((employer, i) => (
+                              <span key={i} className="px-4 py-2 rounded-lg bg-secondary text-sm font-medium text-foreground">
+                                {employer}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </motion.div>
                   </>
                 )}

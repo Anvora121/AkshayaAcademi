@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { universitiesData, countryImages, countries } from "@/data/universities";
+import { useUniversities } from "@/hooks/useUniversities";
 import { getAverageRating } from "@/data/mockFeedback";
 import RankingBadge from "@/components/ui/RankingBadge";
 import FeaturedBadge from "@/components/ui/FeaturedBadge";
@@ -59,8 +60,14 @@ const UniversitiesPage = () => {
       ? countryImages[countryKeys[currentBgIndex]]
       : countryImages[activeCountry] || countryImages.all;
 
-  // Filter + sort
-  const filteredUniversities = universitiesData
+  // Fetch universities from API
+  const { data: universities = [], isLoading } = useUniversities({
+    country: activeCountry,
+    search: searchQuery
+  });
+
+  // Filter + sort (for rank filter which is frontend-only for now)
+  const filteredUniversities = universities
     .filter((uni) => {
       const matchesCountry = activeCountry === "all" || uni.country === activeCountry;
       const matchesSearch =

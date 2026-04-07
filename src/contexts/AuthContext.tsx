@@ -8,7 +8,13 @@ export interface User {
     name?: string;
     email: string;
     role: UserRole;
+    phone?: string;
+    dob?: string;
+    nationality?: string;
+    gender?: string;
     subscriptionStatus?: string;
+    onboardingComplete?: boolean;
+    onboardingStep?: number;
 }
 
 interface AuthContextType {
@@ -34,17 +40,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
             if (response.ok) {
                 const userData = await response.json();
-                const updatedUser = {
+                const updatedUser: User = {
                     id: userData._id || userData.id,
                     name: userData.name,
                     email: userData.email,
                     role: userData.role,
-                    subscriptionStatus: userData.subscriptionStatus
+                    subscriptionStatus: userData.subscriptionStatus,
+                    onboardingComplete: userData.onboardingComplete ?? true,
+                    onboardingStep: userData.onboardingStep ?? 5,
                 };
                 setUser(updatedUser);
                 localStorage.setItem('user', JSON.stringify(updatedUser));
             } else {
-                // Cookie invalid or expired
                 setUser(null);
                 localStorage.removeItem('user');
             }
@@ -56,17 +63,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     useEffect(() => {
         const initAuth = async () => {
             const storedUser = localStorage.getItem('user');
-
             if (storedUser) {
-                setUser(JSON.parse(storedUser));
-                await refreshUser();
-            } else {
-                // Even without a stored user, they might have an active cookie from another tab
-                await refreshUser();
+                try {
+                    setUser(JSON.parse(storedUser));
+                } catch {
+                    localStorage.removeItem('user');
+                }
             }
+            await refreshUser();
             setIsLoading(false);
         };
-
         initAuth();
     }, []);
 
@@ -84,7 +90,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } catch (error) {
             console.error('Logout request failed', error);
         }
-
         setUser(null);
         localStorage.removeItem('user');
         window.location.href = '/';

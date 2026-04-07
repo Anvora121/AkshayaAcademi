@@ -5,12 +5,16 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
 import authRoutes from './routes/auth';
 import offerRoutes from './routes/offers';
 import enquiryRoutes from './routes/enquiries';
 import feedbackRoutes from './routes/feedback';
 import placementsRoutes from './routes/placements';
 import analyticsRoutes from './routes/analytics';
+import universityRoutes from './routes/universities';
+import onboardingRoutes from './routes/onboarding';
+import uploadsRoutes from './routes/uploads';
 
 dotenv.config();
 
@@ -69,6 +73,9 @@ const apiLimiter = rateLimit({
 app.use('/api', apiLimiter);
 
 // Auth routes will have a stricter limiter defined in the auth router
+// Serve uploaded files as static assets
+app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/offers', offerRoutes);
@@ -76,6 +83,9 @@ app.use('/api/enquiries', enquiryRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/placements', placementsRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/universities', universityRoutes);
+app.use('/api/onboarding', onboardingRoutes);
+app.use('/api/uploads', uploadsRoutes);
 
 // Database Connection
 mongoose

@@ -11,6 +11,7 @@ const navItems = [
   { label: "Services", href: "/services" },
   { label: "Countries", href: "/education" },
   { label: "Universities", href: "/universities" },
+  { label: "Find Courses", href: "/courses" },
 ];
 
 const Header = () => {
