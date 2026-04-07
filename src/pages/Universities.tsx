@@ -61,18 +61,21 @@ const UniversitiesPage = () => {
       : countryImages[activeCountry] || countryImages.all;
 
   // Fetch universities from API
-  const { data: universities = [], isLoading } = useUniversities({
+  const { data: universities = [], isLoading, error } = useUniversities({
     country: activeCountry,
     search: searchQuery
   });
 
+  // If API is down / empty (common in fresh setups), fall back to bundled dataset
+  const shouldFallbackToLocal = !!error || (!isLoading && universities.length === 0);
+  const universitiesSource = shouldFallbackToLocal ? universitiesData : universities;
+
   // Filter + sort (for rank filter which is frontend-only for now)
-  const filteredUniversities = universities
+  const filteredUniversities = universitiesSource
     .filter((uni) => {
       const matchesCountry = activeCountry === "all" || uni.country === activeCountry;
       const matchesSearch =
         uni.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        uni.courses.some((c) => c.toLowerCase().includes(searchQuery.toLowerCase())) ||
         uni.location.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesRank =
         rankFilter === "all"
@@ -166,7 +169,7 @@ const UniversitiesPage = () => {
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
                 <Input
                   type="text"
-                  placeholder="Search universities, courses, or locations..."
+                  placeholder="Search universities or locations..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-14 pr-5 h-14 text-base bg-white/10 backdrop-blur-md border-white/20 text-white placeholder:text-white/40 rounded-2xl focus:bg-white/15 focus:border-white/30"
@@ -265,6 +268,12 @@ const UniversitiesPage = () => {
         {/* Universities Grid */}
         <section className="py-12">
           <div className="container mx-auto px-4">
+            {!!error && (
+              <div className="mb-6 rounded-xl border border-amber-200/40 bg-amber-50/40 px-4 py-3 text-sm text-amber-900">
+                Couldn’t load universities from the server. Showing offline data instead.
+              </div>
+            )}
+
             {/* Results bar */}
             <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
               <p className="text-muted-foreground">
@@ -386,20 +395,6 @@ const UniversitiesPage = () => {
                                 <span className="text-xs text-muted-foreground">student rating</span>
                               </div>
                             )}
-
-                            {/* Course tags */}
-                            <div className="flex flex-wrap gap-1.5 mb-4">
-                              {uni.courses.slice(0, 3).map((course, i) => (
-                                <span key={i} className="px-2 py-1 rounded-md bg-secondary text-xs font-medium text-secondary-foreground">
-                                  {course}
-                                </span>
-                              ))}
-                              {uni.courses.length > 3 && (
-                                <span className="px-2 py-1 rounded-md bg-secondary text-xs font-medium text-muted-foreground">
-                                  +{uni.courses.length - 3}
-                                </span>
-                              )}
-                            </div>
 
                             <div className="mt-auto pt-4 border-t border-border">
                               <Button variant="outline" size="sm" className="w-full group/btn">
