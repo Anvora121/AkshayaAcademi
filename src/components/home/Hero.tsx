@@ -286,7 +286,7 @@ const Hero = () => {
                 className="mt-6 bg-[#22384A] rounded-2xl p-6 shadow-lg border border-white/5"
               >
                 <p className="text-sm text-white/40 mb-4 font-medium uppercase tracking-wider">Your Journey</p>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-1">
                   {journeySteps.map((step, index) => (
                     <div key={step.title} className="flex items-center">
                       <button
@@ -299,7 +299,7 @@ const Hero = () => {
                         aria-label={`Journey step ${index + 1}: ${step.title}`}
                       >
                         <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all group-hover:scale-110 ${
+                          className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all group-hover:scale-110 ${
                             activeJourneyStep === index
                               ? "bg-[#FF6B2C] text-white"
                               : "bg-[#314A5D] text-white/50 group-hover:bg-[#3D5B71]"
@@ -316,7 +316,7 @@ const Hero = () => {
                         </span>
                       </button>
                       {index < 5 && (
-                        <div className="w-6 md:w-12 h-px bg-[#314A5D] mx-1 md:mx-4 -translate-y-2 lg:-translate-y-3" />
+                        <div className="w-4 md:w-8 h-px bg-[#314A5D] mx-1 md:mx-2 -translate-y-2 lg:-translate-y-3" />
                       )}
                     </div>
                   ))}
