@@ -26,8 +26,12 @@ export const LoginForm = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!email || !password) {
-            toast.error('Please enter your email and password.');
+        if (!email) {
+            toast.error('Email address is required.');
+            return;
+        }
+        if (!password) {
+            toast.error('Please enter your password.');
             return;
         }
         setIsLoading(true);

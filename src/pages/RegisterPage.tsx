@@ -282,7 +282,8 @@ const RegisterPage: React.FC = () => {
         const stepErrors = validateStep(currentStep, form);
         if (Object.keys(stepErrors).length > 0) {
             setErrors(stepErrors);
-            toast.error('Please fix the errors before continuing.');
+            const firstError = Object.values(stepErrors)[0];
+            toast.error(firstError || 'Please fix the errors before continuing.');
             return;
         }
         setErrors({});
