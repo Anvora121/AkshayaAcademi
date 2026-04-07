@@ -1,12 +1,13 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { UserRole } from '../models/User';
+import type { UserRole } from '../models/User';
 
 export interface AuthRequest extends Request {
     user?: {
         id: string;
         role: UserRole;
-        subscriptionStatus: string;
+        name?: string;
+        subscriptionStatus?: string;
     };
 }
 
