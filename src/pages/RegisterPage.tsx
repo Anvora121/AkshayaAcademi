@@ -66,16 +66,20 @@ const DEFAULT_FORM: FormState = {
 
 type Errors = Partial<Record<keyof FormState | 'confirmPassword', string>>;
 
-function validateStep(step: number, form: FormState): Errors {
+function validateStep(step: number, form: FormState, isExistingUser?: boolean): Errors {
     const errors: Errors = {};
     if (step === 1) {
         if (!form.name.trim()) errors.name = 'Full name is required';
         if (!form.email.trim()) errors.email = 'Email is required';
         else if (!/\S+@\S+\.\S+/.test(form.email)) errors.email = 'Enter a valid email';
-        if (!form.password) errors.password = 'Password is required';
-        else if (form.password.length < 8) errors.password = 'Password must be at least 8 characters';
-        if (!form.confirmPassword) errors.confirmPassword = 'Please confirm your password';
-        else if (form.password !== form.confirmPassword) errors.confirmPassword = 'Passwords do not match';
+        
+        // Only validate password for new registrations
+        if (!isExistingUser) {
+            if (!form.password) errors.password = 'Password is required';
+            else if (form.password.length < 8) errors.password = 'Password must be at least 8 characters';
+            if (!form.confirmPassword) errors.confirmPassword = 'Please confirm your password';
+            else if (form.password !== form.confirmPassword) errors.confirmPassword = 'Passwords do not match';
+        }
     }
     if (step === 2) {
         if (!form.domain) errors.domain = 'Please select a study domain';
@@ -279,7 +283,7 @@ const RegisterPage: React.FC = () => {
 
     // ── Navigation ───────────────────────────────────────────────────
     const handleNext = async () => {
-        const stepErrors = validateStep(currentStep, form);
+        const stepErrors = validateStep(currentStep, form, isExistingUser);
         if (Object.keys(stepErrors).length > 0) {
             setErrors(stepErrors);
             const firstError = Object.values(stepErrors)[0];
