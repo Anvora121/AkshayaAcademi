@@ -249,12 +249,15 @@ const RegisterPage: React.FC = () => {
             const formData = new FormData();
             formData.append('file', file);
 
-            const res = await fetch(`${API_BASE_URL}/api/uploads/document`, {
+            const res = await fetch(`${API_BASE_URL}/uploads/document`, {
                 method: 'POST',
                 credentials: 'include',
                 body: formData,
             });
-            const data = await res.json();
+            const contentType = res.headers.get('content-type') || '';
+            const data = contentType.includes('application/json')
+                ? await res.json()
+                : { message: await res.text() };
             if (!res.ok) throw new Error(data.message || 'Upload failed');
 
             setUploadProgress((p) => ({ ...p, [field]: 100 }));

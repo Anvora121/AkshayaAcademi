@@ -3,11 +3,23 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
 import { Admin } from '../models/Admin';
+import type { CookieOptions } from 'express';
 
 const generateToken = (id: string, role: string) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET!, {
     expiresIn: '1d',
   });
+};
+
+const getAuthCookieOptions = (): CookieOptions => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    // Cross-site cookies (Vercel frontend -> Render backend) require SameSite=None.
+    sameSite: isProduction ? 'none' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000,
+  };
 };
 
 export const register = async (req: Request, res: Response) => {
@@ -38,12 +50,7 @@ export const register = async (req: Request, res: Response) => {
 
     const token = generateToken(user.id, user.role);
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    res.cookie('token', token, getAuthCookieOptions());
 
     res.status(201).json({
       message: 'User registered successfully',
@@ -72,12 +79,7 @@ export const login = async (req: Request, res: Response) => {
       const isMatch = await bcrypt.compare(password, admin.passwordHash);
       if (isMatch) {
         const token = generateToken(admin.id, 'admin');
-        res.cookie('token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'strict',
-          maxAge: 24 * 60 * 60 * 1000,
-        });
+        res.cookie('token', token, getAuthCookieOptions());
         return res.json({
           user: {
             id: admin.id,
@@ -102,12 +104,7 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const token = generateToken(user.id, user.role);
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    res.cookie('token', token, getAuthCookieOptions());
 
     res.json({
       user: {
@@ -125,7 +122,8 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const logout = (req: Request, res: Response) => {
-  res.clearCookie('token');
+  // Clear with the same attributes used when setting the cookie.
+  res.clearCookie('token', getAuthCookieOptions());
   res.json({ message: 'Logged out successfully' });
 };
 
