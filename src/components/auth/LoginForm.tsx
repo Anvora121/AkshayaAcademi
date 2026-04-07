@@ -15,13 +15,6 @@ const FEATURE_BULLETS = [
     { icon: <ShieldCheck className="w-5 h-5" />, text: 'Secured admissions & AI-powered visa guidance' },
 ];
 
-const navItems = [
-    { label: "Home", href: "/" },
-    { label: "Services", href: "/services" },
-    { label: "Countries", href: "/education" },
-    { label: "Universities", href: "/universities" },
-];
-
 export const LoginForm = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -80,35 +73,6 @@ export const LoginForm = () => {
                 <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-accent/20 rounded-full blur-[200px] -translate-x-1/2 -translate-y-1/2" />
                 <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[150px] translate-x-1/3 translate-y-1/3" />
                 <div className="absolute inset-0 grid-pattern opacity-[0.05]" />
-
-                {/* Logo & Navigation */}
-                <div className="relative z-10 flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-3 group">
-                        <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-accent overflow-hidden shadow-lg shadow-accent/20 transition-transform duration-300 group-hover:scale-105">
-                            <img src="/logo.png" alt="AA Logo" className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-xl font-bold tracking-tight text-foreground">
-                                Akshaya <span className="text-accent">Akademics</span>
-                            </span>
-                            <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground -mt-1">
-                                Global Education
-                            </span>
-                        </div>
-                    </Link>
-
-                    <nav className="flex items-center gap-1">
-                        {navItems.map((item) => (
-                            <Link
-                                key={item.href}
-                                to={item.href}
-                                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all duration-200"
-                            >
-                                {item.label}
-                            </Link>
-                        ))}
-                    </nav>
-                </div>
 
                 {/* Brand Hero Copy */}
                 <div className="relative z-10 max-w-lg">
