@@ -7,6 +7,7 @@ import {
   LogOut, Crown, ArrowLeft, Menu, X, Edit3,
   GraduationCap, Globe, MapPin, Phone, Mail, Trophy,
   CheckCircle2, Clock, ChevronRight, Loader2,
+  PanelLeftClose, PanelLeftOpen,
 } from 'lucide-react';
 import { usePageMeta } from '../../hooks/usePageMeta';
 import { API_BASE_URL } from '@/config';
@@ -118,6 +119,7 @@ const UserDashboard = () => {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
   const fetchProfile = useCallback(async () => {
@@ -418,10 +420,11 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#FDFDFF] selection:bg-accent/10 font-sans">
       {/* Background blobs */}
-      <div className="fixed top-0 right-0 w-[600px] h-[600px] bg-accent/8 rounded-full blur-[180px] pointer-events-none -z-0" />
-      <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-primary/8 rounded-full blur-[140px] pointer-events-none -z-0" />
+      <div className="fixed top-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/5 rounded-full blur-[120px] pointer-events-none z-0" />
+      <div className="fixed bottom-[-5%] left-[-5%] w-[30%] h-[30%] bg-accent/3 rounded-full blur-[100px] pointer-events-none z-0" />
+      <div className="fixed inset-0 grid-pattern opacity-[0.02] pointer-events-none z-0" />
 
       <div className="relative z-10 flex min-h-screen">
         {/* ── Sidebar ──────────────────────────────────────────────────────── */}
@@ -439,94 +442,119 @@ const UserDashboard = () => {
         </AnimatePresence>
 
         <aside
-          className={`fixed top-0 left-0 h-full w-72 bg-background/95 backdrop-blur-xl border-r border-border z-30 flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static lg:flex ${
+          className={`fixed top-0 left-0 h-full bg-white/60 backdrop-blur-2xl border-r border-border/60 shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-30 flex flex-col transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] lg:translate-x-0 lg:static lg:flex ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+          } ${isCollapsed ? 'w-20' : 'w-72'}`}
         >
           {/* Sidebar header */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-border">
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">Student Portal</p>
-              <h1 className="font-bold text-foreground">My Dashboard</h1>
+          <div className={`flex items-center px-5 py-6 border-b border-border/50 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+            <div className={`overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0 hidden' : 'w-auto opacity-100 block'}`}>
+              <p className="text-[10px] text-muted-foreground/80 font-bold uppercase tracking-widest whitespace-nowrap mb-0.5">Student Portal</p>
+              <h1 className="text-[22px] font-black text-foreground whitespace-nowrap leading-none tracking-tight">My Dashboard</h1>
             </div>
+            
+            {/* Desktop Collapse Toggle */}
             <button
-              className="lg:hidden p-1.5 rounded-lg hover:bg-secondary/60 text-muted-foreground"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className={`hidden lg:flex p-2 rounded-xl bg-secondary/50 hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-all shrink-0 ${isCollapsed ? '' : '-mr-2'}`}
+              title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              {isCollapsed ? <PanelLeftOpen className="w-[18px] h-[18px]" /> : <PanelLeftClose className="w-[18px] h-[18px]" />}
+            </button>
+            
+            {/* Mobile Close Toggle */}
+            <button
+              className="lg:hidden p-2 rounded-xl bg-secondary/50 hover:bg-secondary/80 text-muted-foreground shrink-0"
               onClick={() => setSidebarOpen(false)}
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Profile Mini Card */}
-          <div className="px-6 py-4 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-accent/20 text-accent flex items-center justify-center font-bold text-sm border border-accent/30">
+          <div className={`px-5 py-5 border-b border-border/50 transition-all duration-300 ${isCollapsed ? 'items-center flex flex-col' : ''}`}>
+            <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3.5'}`}>
+              <div className="w-[42px] h-[42px] rounded-xl bg-accent/10 text-accent flex items-center justify-center font-bold text-[15px] border border-accent/20 shrink-0 shadow-sm shadow-accent/5">
                 {(user?.name ?? user?.email ?? 'U')[0].toUpperCase()}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">{user?.name ?? 'Student'}</p>
-                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+              <div className={`min-w-0 transition-all duration-300 overflow-hidden ${isCollapsed ? 'hidden' : 'block'}`}>
+                <p className="font-bold text-foreground truncate">{user?.name ?? 'Student'}</p>
+                <p className="text-[13px] text-muted-foreground truncate">{user?.email}</p>
               </div>
             </div>
 
             {/* Completion mini bar */}
-            <div className="mt-3">
-              <div className="flex justify-between mb-1">
-                <span className="text-xs text-muted-foreground">Profile</span>
-                <span className="text-xs text-accent font-semibold">{completion}%</span>
+            {!isCollapsed && (
+              <div className="mt-5">
+                <div className="flex justify-between items-end mb-2">
+                  <span className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">Profile</span>
+                  <span className="text-xs text-accent font-black">{completion}%</span>
+                </div>
+                <div className="h-1.5 bg-secondary/80 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-accent rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${completion}%` }}
+                    transition={{ duration: 1.2, ease: 'easeOut' }}
+                  />
+                </div>
               </div>
-              <div className="h-1 bg-border rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full bg-accent rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${completion}%` }}
-                  transition={{ duration: 1.2, ease: 'easeOut' }}
-                />
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Nav */}
-          <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          <nav className={`flex-1 overflow-y-auto overflow-x-hidden ${isCollapsed ? 'px-3 py-5 space-y-2' : 'px-4 py-5 space-y-1'}`}>
             {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => { setActiveSection(id); setSidebarOpen(false); }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                title={isCollapsed ? label : undefined}
+                className={`w-full flex items-center px-3 py-[11px] rounded-[14px] text-sm font-semibold transition-all duration-200 group ${
                   activeSection === id
-                    ? 'bg-accent text-white shadow-sm shadow-accent/20'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'
-                }`}
+                    ? 'bg-accent text-white shadow-lg shadow-accent/25'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+                } ${isCollapsed ? 'justify-center px-0' : 'gap-3.5'}`}
               >
-                <Icon className="w-4 h-4 flex-shrink-0" />
-                {label}
-                {activeSection === id && <ChevronRight className="w-3.5 h-3.5 ml-auto opacity-70" />}
+                <Icon className={`w-[18px] h-[18px] flex-shrink-0 ${activeSection === id ? 'text-white' : 'text-muted-foreground group-hover:text-accent group-hover:scale-110 transition-transform'}`} />
+                <span className={`whitespace-nowrap transition-all duration-300 overflow-hidden ${isCollapsed ? 'w-0 opacity-0 hidden' : 'w-auto opacity-100 block'}`}>
+                  {label}
+                </span>
+                {!isCollapsed && activeSection === id && <ChevronRight className="w-[14px] h-[14px] ml-auto opacity-80" />}
               </button>
             ))}
           </nav>
 
           {/* Sidebar footer */}
-          <div className="px-3 py-4 border-t border-border space-y-1">
+          <div className={`border-t border-border/50 overflow-x-hidden ${isCollapsed ? 'px-3 py-4 space-y-2' : 'px-4 py-4 space-y-1.5'}`}>
             <Link
               to="/premium-plans"
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-amber-500 hover:bg-amber-500/10 transition-all"
+              title={isCollapsed ? "Upgrade to Premium" : undefined}
+              className={`w-full flex items-center py-[11px] rounded-[14px] text-[13px] font-bold text-amber-500 hover:bg-amber-500/10 transition-all ${isCollapsed ? 'justify-center px-0' : 'px-3 gap-3.5'}`}
             >
-              <Crown className="w-4 h-4 flex-shrink-0" />
-              Upgrade to Premium
+              <Crown className="w-[18px] h-[18px] flex-shrink-0" />
+              <span className={`whitespace-nowrap transition-all duration-300 ${isCollapsed ? 'hidden' : 'block'}`}>
+                Upgrade Premium
+              </span>
             </Link>
             <Link
               to="/"
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-all"
+              title={isCollapsed ? "Back to Home" : undefined}
+              className={`w-full flex items-center py-[11px] rounded-[14px] text-[13px] font-bold text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all ${isCollapsed ? 'justify-center px-0' : 'px-3 gap-3.5'}`}
             >
-              <ArrowLeft className="w-4 h-4 flex-shrink-0" />
-              Back to Home
+              <ArrowLeft className="w-[18px] h-[18px] flex-shrink-0" />
+              <span className={`whitespace-nowrap transition-all duration-300 ${isCollapsed ? 'hidden' : 'block'}`}>
+                Back to Home
+              </span>
             </Link>
             <button
               onClick={logout}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-500/10 transition-all"
+              title={isCollapsed ? "Sign Out" : undefined}
+              className={`w-full flex items-center py-[11px] rounded-[14px] text-[13px] font-bold text-red-500 hover:bg-red-500/10 transition-all ${isCollapsed ? 'justify-center px-0' : 'px-3 gap-3.5'}`}
             >
-              <LogOut className="w-4 h-4 flex-shrink-0" />
-              Sign Out
+              <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
+              <span className={`whitespace-nowrap transition-all duration-300 ${isCollapsed ? 'hidden' : 'block'}`}>
+                Sign Out
+              </span>
             </button>
           </div>
         </aside>
