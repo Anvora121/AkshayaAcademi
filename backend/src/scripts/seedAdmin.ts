@@ -1,45 +1,44 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
-import { Admin } from '../models/Admin';
 import path from 'path';
 
+// Load the .env file from the backend root
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
+import { Admin } from '../models/Admin';
+
 const seedAdmin = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI!);
-    console.log('Connected to MongoDB');
+    try {
+        // Connect to MongoDB
+        await mongoose.connect(process.env.MONGODB_URI as string);
+        console.log('Connected to DB');
 
-    const email = process.env.ADMIN_EMAIL || 'admin@akshayaakademics.com';
-    const password = process.env.ADMIN_PASSWORD || 'Admin@123';
+        const email = 'admin@akshayaakademics.com';
+        const existingAdmin = await Admin.findOne({ email: email.toLowerCase() });
+        
+        if (existingAdmin) {
+            console.log('Admin already exists. Deleting and recreating...');
+            await Admin.deleteOne({ email: email.toLowerCase() });
+        }
 
-    const existingAdmin = await Admin.findOne({ email });
-    if (existingAdmin) {
-      console.log('Admin already exists');
-      process.exit(0);
+        const salt = await bcrypt.genSalt(12);
+        const passwordHash = await bcrypt.hash('Admin@2024!', salt);
+
+        const newAdmin = new Admin({
+            name: 'Akshaya Admin',
+            email: email.toLowerCase(),
+            passwordHash: passwordHash,
+            role: 'admin'
+        });
+
+        await newAdmin.save();
+        console.log('Admin user seeded successfully!');
+        process.exit(0);
+    } catch (error) {
+        console.error('Error seeding admin:', error);
+        process.exit(1);
     }
-
-    const salt = await bcrypt.genSalt(12);
-    const passwordHash = await bcrypt.hash(password, salt);
-
-    const admin = new Admin({
-      name: 'Super Admin',
-      email,
-      passwordHash,
-      role: 'admin',
-    });
-
-    await admin.save();
-    console.log('Admin user created successfully');
-    console.log(`Email: ${email}`);
-    console.log(`Password: ${password}`);
-
-    process.exit(0);
-  } catch (error) {
-    console.error('Error seeding admin:', error);
-    process.exit(1);
-  }
 };
 
 seedAdmin();
