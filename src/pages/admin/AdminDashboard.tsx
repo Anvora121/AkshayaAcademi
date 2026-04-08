@@ -1,125 +1,141 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { ArrowLeft, ShieldCheck, Terminal, LogOut, Activity, BarChart2, Briefcase } from 'lucide-react';
-import { OffersManager } from '../../components/admin/OffersManager';
-import AdminAnalytics from './AdminAnalytics';
-import { StudentsTable } from '../../components/admin/StudentsTable';
-import { motion } from 'framer-motion';
+import { 
+    Users, Briefcase, Activity, BarChart2, CheckCircle, 
+    LogOut, Settings, PanelLeftClose, PanelLeftOpen, Globe, Building2
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { OverviewAnalytics } from '../../components/admin/OverviewAnalytics';
+import { StudentsTable } from '../../components/admin/StudentsTable';
+import { UniversitiesManager } from '../../components/admin/UniversitiesManager';
+import { CountriesManager } from '../../components/admin/CountriesManager';
+import { ApplicationsTracker } from '../../components/admin/ApplicationsTracker';
 
-type AdminTab = 'offers' | 'analytics' | 'students';
+type AdminTab = 'overview' | 'students' | 'universities' | 'countries' | 'applications';
 
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
-    const [activeTab, setActiveTab] = useState<AdminTab>('offers');
+    const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-    const tabs: { id: AdminTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-        { id: 'offers', label: 'Offers & Applications', icon: Briefcase },
-        { id: 'analytics', label: 'Analytics', icon: BarChart2 },
-        { id: 'students', label: 'Students', icon: Activity },
+    const navItems: { id: AdminTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+        { id: 'overview', label: 'Overview', icon: BarChart2 },
+        { id: 'students', label: 'Students', icon: Users },
+        { id: 'applications', label: 'Applications', icon: Briefcase },
+        { id: 'universities', label: 'Universities', icon: Building2 },
+        { id: 'countries', label: 'Countries', icon: Globe },
     ];
 
     return (
-        <div className="min-h-screen bg-background relative overflow-hidden">
-            {/* Background Effects */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[150px] -z-10 pointer-events-none" />
-            <div className="absolute top-40 left-0 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
-            <div className="absolute inset-0 grid-pattern opacity-10 -z-10 pointer-events-none" />
+        <div className="flex bg-[#F8F9FA] dark:bg-[#0A0A0A] min-h-screen text-foreground selection:bg-blue-500/30">
+            {/* Sidebar Navigation */}
+            <motion.aside 
+                initial={false}
+                animate={{ width: isSidebarOpen ? 280 : 80 }}
+                className="hidden md:flex flex-col border-r border-border/50 bg-white dark:bg-[#0A0A0A] z-20 shrink-0 sticky top-0 h-screen transition-all shadow-[1px_0_10px_rgba(0,0,0,0.02)]"
+            >
+                <div className="h-16 flex items-center justify-between px-6 border-b border-border/50">
+                    {isSidebarOpen && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white font-bold">A</div>
+                            <span className="font-bold tracking-tight text-lg">Admin View</span>
+                        </motion.div>
+                    )}
+                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-muted-foreground hover:text-foreground">
+                        {isSidebarOpen ? <PanelLeftClose className="w-5 h-5"/> : <PanelLeftOpen className="w-5 h-5 mx-auto"/> }
+                    </button>
+                </div>
 
-            <div className="pt-24 pb-16 px-6 relative z-10 w-full">
-                <div className="max-w-7xl mx-auto">
-                    {/* Header */}
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6"
-                    >
-                        <div>
-                            <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 group text-sm font-medium">
-                                <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center group-hover:bg-secondary transition-all">
-                                    <ArrowLeft className="w-4 h-4" />
-                                </div>
-                                Back to Home
-                            </Link>
-
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 text-sm font-bold mb-4 uppercase tracking-wider">
-                                <ShieldCheck className="w-4 h-4" />
-                                Super Admin
-                            </div>
-
-                            <div className="flex items-center gap-3 mb-2">
-                                <h1 className="text-4xl font-bold text-foreground">Command Center</h1>
-                            </div>
-                            <p className="text-muted-foreground text-lg">System Management Console. Welcome back, {user?.name || user?.email}</p>
-                        </div>
-                        <button
-                            onClick={logout}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500/20 hover:scale-105 transition-all font-medium border border-red-500/20"
-                        >
-                            <LogOut className="w-4 h-4" />
-                            Sign Out
-                        </button>
-                    </motion.div>
-
-                    {/* System Status Banner */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="premium-card p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 border-blue-500/20 bg-blue-500/5"
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-xl bg-blue-500/20 text-blue-500">
-                                <Terminal className="w-6 h-6" />
-                            </div>
-                            <div>
-                                <p className="font-semibold text-foreground text-lg">Admissions & Offers Engine Active</p>
-                                <p className="text-sm text-muted-foreground">
-                                    All administrative privileges are enabled. Manage users, universities, and time-limited deals here.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 text-green-500 font-medium text-sm border border-green-500/20">
-                            <Activity className="w-4 h-4" />
-                            Systems Operational
-                        </div>
-                    </motion.div>
-
-                    {/* Tab Navigation */}
-                    <div className="flex gap-1 mb-8 p-1 rounded-xl bg-secondary/50 border border-border w-fit">
-                        {tabs.map(({ id, label, icon: Icon }) => (
+                <div className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+                    {isSidebarOpen && <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4">Management</p>}
+                    
+                    {navItems.map((item) => {
+                        const isActive = activeTab === item.id;
+                        return (
                             <button
-                                key={id}
-                                id={`admin-tab-${id}`}
-                                onClick={() => setActiveTab(id)}
+                                key={item.id}
+                                onClick={() => setActiveTab(item.id)}
                                 className={cn(
-                                    "flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all",
-                                    activeTab === id
-                                        ? "bg-background text-foreground shadow-sm"
-                                        : "text-muted-foreground hover:text-foreground"
+                                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all relative group",
+                                    isActive 
+                                        ? "text-blue-500 font-semibold" 
+                                        : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
                                 )}
                             >
-                                <Icon className="w-4 h-4" />
-                                {label}
+                                {isActive && (
+                                    <motion.div layoutId="adminSidebarActive" className="absolute inset-0 bg-blue-500/10 rounded-lg -z-10" />
+                                )}
+                                <item.icon className={cn("w-5 h-5", !isSidebarOpen && "mx-auto")} />
+                                {isSidebarOpen && <span>{item.label}</span>}
+                                {!isSidebarOpen && (
+                                    <div className="absolute left-full ml-4 hidden group-hover:block bg-popover text-popover-foreground px-2 py-1 rounded shadow-md text-xs whitespace-nowrap z-50">
+                                        {item.label}
+                                    </div>
+                                )}
                             </button>
-                        ))}
-                    </div>
-
-                    {/* Content */}
-                    <motion.div
-                        key={activeTab}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        {activeTab === 'offers' && <OffersManager />}
-                        {activeTab === 'analytics' && <AdminAnalytics />}
-                        {activeTab === 'students' && <StudentsTable />}
-                    </motion.div>
+                        );
+                    })}
                 </div>
-            </div>
+
+                <div className="p-4 border-t border-border/50">
+                    <button 
+                        onClick={logout}
+                        className={cn(
+                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-500 hover:bg-red-500/10 transition-colors",
+                            !isSidebarOpen && "justify-center"
+                        )}
+                    >
+                        <LogOut className="w-5 h-5" />
+                        {isSidebarOpen && <span className="font-medium">Sign Out</span>}
+                    </button>
+                </div>
+            </motion.aside>
+
+            {/* Main Content Area */}
+            <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
+                {/* Top Nav */}
+                <header className="h-16 px-6 md:px-10 flex items-center justify-between border-b border-border/50 bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-md sticky top-0 z-10">
+                    <div className="flex items-center gap-4">
+                        <h1 className="text-xl font-bold tracking-tight capitalize">{activeTab}</h1>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                            Return to Website
+                        </Link>
+                        <div className="h-4 w-px bg-border"></div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center border border-border">
+                                <Settings className="w-4 h-4 text-muted-foreground" />
+                            </div>
+                            <div className="hidden md:block">
+                                <p className="text-sm font-medium leading-none">{user?.name || 'Admin'}</p>
+                                <p className="text-xs text-muted-foreground">Admin Status</p>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <div className="p-6 md:p-10 max-w-7xl mx-auto w-full">
+                    {/* Render Content Based on Active Tab */}
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={activeTab}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.98 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            {activeTab === 'overview' && <OverviewAnalytics />}
+                            {activeTab === 'students' && <StudentsTable />}
+                            {activeTab === 'universities' && <UniversitiesManager />}
+                            {activeTab === 'countries' && <CountriesManager />}
+                            {activeTab === 'applications' && <ApplicationsTracker />}
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+            </main>
         </div>
     );
 };
