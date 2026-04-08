@@ -15,6 +15,7 @@ import analyticsRoutes from './routes/analytics';
 import universityRoutes from './routes/universities';
 import onboardingRoutes from './routes/onboarding';
 import uploadsRoutes from './routes/uploads';
+import adminRoutes from './routes/admin';
 
 dotenv.config();
 
@@ -98,6 +99,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/universities', universityRoutes);
 app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/uploads', uploadsRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Database Connection
 mongoose

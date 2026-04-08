@@ -4,10 +4,11 @@ import { useAuth } from '../../contexts/AuthContext';
 import { ArrowLeft, ShieldCheck, Terminal, LogOut, Activity, BarChart2, Briefcase } from 'lucide-react';
 import { OffersManager } from '../../components/admin/OffersManager';
 import AdminAnalytics from './AdminAnalytics';
+import { StudentsTable } from '../../components/admin/StudentsTable';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-type AdminTab = 'offers' | 'analytics';
+type AdminTab = 'offers' | 'analytics' | 'students';
 
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
@@ -16,6 +17,7 @@ const AdminDashboard = () => {
     const tabs: { id: AdminTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
         { id: 'offers', label: 'Offers & Applications', icon: Briefcase },
         { id: 'analytics', label: 'Analytics', icon: BarChart2 },
+        { id: 'students', label: 'Students', icon: Activity },
     ];
 
     return (
@@ -114,6 +116,7 @@ const AdminDashboard = () => {
                     >
                         {activeTab === 'offers' && <OffersManager />}
                         {activeTab === 'analytics' && <AdminAnalytics />}
+                        {activeTab === 'students' && <StudentsTable />}
                     </motion.div>
                 </div>
             </div>
