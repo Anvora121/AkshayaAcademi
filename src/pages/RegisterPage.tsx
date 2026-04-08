@@ -216,7 +216,7 @@ const RegisterPage: React.FC = () => {
                 };
             }
 
-            const res = await fetch(`${API_BASE_URL}/onboarding/profile`, {
+            const res = await fetch(`${API_BASE_URL}/onboarding/profile/step`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -248,6 +248,7 @@ const RegisterPage: React.FC = () => {
         try {
             const formData = new FormData();
             formData.append('file', file);
+            formData.append('docType', field); // 'resume' | 'transcript' | 'sop'
 
             const res = await fetch(`${API_BASE_URL}/uploads/document`, {
                 method: 'POST',
@@ -316,7 +317,7 @@ const RegisterPage: React.FC = () => {
     const handleFinalSubmit = async () => {
         setIsSubmitting(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/onboarding/profile`, {
+            const res = await fetch(`${API_BASE_URL}/onboarding/profile/step`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',

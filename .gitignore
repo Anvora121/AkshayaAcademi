@@ -9,3 +9,6 @@ backend/.env
 # Keep the example template
 !.env.example
 !backend/.env.example
+
+# Credentials
+backend/*.json
