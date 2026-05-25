@@ -37,7 +37,11 @@ const UniversityDetailPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
-  const { data: university, isLoading } = useUniversity(id || "");
+  const { data: apiUniversity, isLoading, error } = useUniversity(id || "");
+  const localUniversity = universitiesData.find(u => u.id === id);
+  const university = apiUniversity || localUniversity;
+
+  const isActuallyLoading = isLoading && !localUniversity;
 
   usePageMeta({
     title: university ? university.name : "University Not Found",
@@ -54,7 +58,7 @@ const UniversityDetailPage = () => {
     }, 1500);
   };
 
-  if (isLoading) {
+  if (isActuallyLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Header />
