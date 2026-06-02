@@ -7,6 +7,7 @@ const countries = [
   {
     id: "us",
     name: "United States",
+    code: "us",
     flag: "🇺🇸",
     universities: 120,
     workRights: "OPT: 1-3 years",
@@ -17,6 +18,7 @@ const countries = [
   {
     id: "uk",
     name: "United Kingdom",
+    code: "gb",
     flag: "🇬🇧",
     universities: 85,
     workRights: "PSW: 2 years",
@@ -27,6 +29,7 @@ const countries = [
   {
     id: "canada",
     name: "Canada",
+    code: "ca",
     flag: "🇨🇦",
     universities: 65,
     workRights: "PGWP: Up to 3 years",
@@ -37,6 +40,7 @@ const countries = [
   {
     id: "germany",
     name: "Germany",
+    code: "de",
     flag: "🇩🇪",
     universities: 45,
     workRights: "18 months job seeker",
@@ -47,6 +51,7 @@ const countries = [
   {
     id: "australia",
     name: "Australia",
+    code: "au",
     flag: "🇦🇺",
     universities: 55,
     workRights: "PSV: 2-4 years",
@@ -57,6 +62,7 @@ const countries = [
   {
     id: "newzealand",
     name: "New Zealand",
+    code: "nz",
     flag: "🇳🇿",
     universities: 25,
     workRights: "PSW: 1-3 years",
@@ -67,6 +73,7 @@ const countries = [
   {
     id: "austria",
     name: "Austria",
+    code: "at",
     flag: "🇦🇹",
     universities: 20,
     workRights: "Red-White-Red Card",
@@ -77,6 +84,7 @@ const countries = [
   {
     id: "poland",
     name: "Poland",
+    code: "pl",
     flag: "🇵🇱",
     universities: 30,
     workRights: "1 year residence permit",
@@ -87,6 +95,7 @@ const countries = [
   {
     id: "switzerland",
     name: "Switzerland",
+    code: "ch",
     flag: "🇨🇭",
     universities: 15,
     workRights: "6 months job search permit",
@@ -97,6 +106,7 @@ const countries = [
   {
     id: "netherlands",
     name: "Netherlands",
+    code: "nl",
     flag: "🇳🇱",
     universities: 35,
     workRights: "Orientation year: 1 year",
@@ -107,6 +117,7 @@ const countries = [
   {
     id: "sweden",
     name: "Sweden",
+    code: "se",
     flag: "🇸🇪",
     universities: 30,
     workRights: "Job seeker: 6 months",
@@ -153,53 +164,68 @@ const Countries = () => {
                 to={`/education?country=${country.id}`}
                 className="group block h-full"
               >
-                <div className="country-card h-full overflow-hidden rounded-2xl bg-card border border-border">
+                <div className="country-card h-full flex flex-col overflow-hidden rounded-2xl bg-card border border-border">
                   {/* Image */}
-                  <div className="relative h-52 overflow-hidden">
+                  <div className="relative h-52 overflow-hidden flex-shrink-0">
                     <img
                       src={country.image}
                       alt={country.name}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+                    {/* Universities Badge Overlay */}
+                    <div className="absolute top-4 right-4 z-20">
+                      <span className="px-2.5 py-1 text-[11px] font-semibold bg-white/95 dark:bg-slate-900/95 text-primary rounded-full shadow-sm flex items-center gap-1">
+                        <GraduationCap className="w-3.5 h-3.5 text-accent" />
+                        {country.universities}+ Universities
+                      </span>
+                    </div>
 
                     {/* Flag & Name Overlay */}
                     <div className="absolute bottom-0 left-0 right-0 p-5 z-20">
                       <div className="flex items-center gap-3">
-                        <span className="text-4xl drop-shadow-lg">{country.flag}</span>
+                        <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md flex-shrink-0 bg-slate-100 flex items-center justify-center">
+                          <img
+                            src={`https://flagcdn.com/${country.code}.svg`}
+                            alt={country.name}
+                            className="w-full h-full object-cover scale-110"
+                          />
+                        </div>
                         <div>
-                          <h3 className="text-lg font-bold text-white">
+                          <span className="text-[10px] tracking-widest text-accent font-bold uppercase block mb-0.5">Study in</span>
+                          <h3 className="text-base font-bold text-white tracking-tight leading-tight drop-shadow">
                             {country.name}
                           </h3>
-                          <p className="text-sm text-white/70 flex items-center gap-1">
-                            <GraduationCap className="w-3.5 h-3.5" />
-                            {country.universities}+ Universities
-                          </p>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Content */}
-                  <div className="p-5">
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                  <div className="p-5 flex flex-col flex-grow bg-gradient-to-b from-card to-secondary/10">
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2 leading-relaxed">
                       {country.description}
                     </p>
 
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Briefcase className="w-4 h-4 text-teal" />
-                        <span>{country.workRights}</span>
+                    <div className="space-y-2.5 mb-5">
+                      <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-secondary/40 border border-border/40 text-xs text-muted-foreground transition-colors group-hover:bg-accent/5 group-hover:border-accent/10">
+                        <Briefcase className="w-4 h-4 text-teal flex-shrink-0" />
+                        <span className="font-semibold text-foreground/80">Work Rights:</span>
+                        <span className="text-muted-foreground truncate">{country.workRights}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <DollarSign className="w-4 h-4 text-success" />
-                        <span>{country.avgCost}</span>
+                      <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-secondary/40 border border-border/40 text-xs text-muted-foreground transition-colors group-hover:bg-accent/5 group-hover:border-accent/10">
+                        <DollarSign className="w-4 h-4 text-success flex-shrink-0" />
+                        <span className="font-semibold text-foreground/80">Avg Cost:</span>
+                        <span className="text-muted-foreground truncate">{country.avgCost}</span>
                       </div>
                     </div>
 
-                    <div className="pt-4 border-t border-border flex items-center justify-between">
-                      <span className="text-sm font-medium text-accent">Explore Universities</span>
-                      <ChevronRight className="w-4 h-4 text-accent group-hover:translate-x-1 transition-transform" />
+                    <div className="pt-4 border-t border-border flex items-center justify-between mt-auto">
+                      <span className="text-sm font-semibold text-primary uppercase tracking-wider group-hover:text-accent transition-colors">
+                        Explore Universities
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-primary group-hover:text-accent group-hover:translate-x-1.5 transition-all" />
                     </div>
                   </div>
                 </div>

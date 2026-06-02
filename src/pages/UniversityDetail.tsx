@@ -6,35 +6,28 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePageMeta } from "@/hooks/usePageMeta";
-import {
-  MapPin,
-  Users,
-  Trophy,
-  CheckCircle,
-  GraduationCap,
-  Briefcase,
-  DollarSign,
-  Clock,
-  Star,
-  ArrowRight,
-  ArrowLeft,
-  Building,
-  TrendingUp,
-  BookOpen,
-  Award,
-} from "lucide-react";
+import { ArrowLeft, CheckCircle, ArrowRight } from "lucide-react";
 import { universitiesData } from "@/data/universities";
-import { getPlacementsForUniversity, getUniversityCTCStats, getCountryBenchmark } from "@/data/mockPlacements";
-import { getAverageRating } from "@/data/mockFeedback";
-import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import RankingBadge from "@/components/ui/RankingBadge";
-import FeaturedBadge from "@/components/ui/FeaturedBadge";
-import FeedbackList from "@/components/university/FeedbackList";
-import PlacementOffersTable from "@/components/university/PlacementOffersTable";
 import { useUniversity } from "@/hooks/useUniversities";
 
-type Tab = "overview" | "placements" | "reviews";
+// Import all the new premium components
+import UniversityHero from "@/components/university/UniversityHero";
+import UniversityWhyChoose from "@/components/university/UniversityWhyChoose";
+import UniversityCourses from "@/components/university/UniversityCourses";
+import UniversityEligibilityChecker from "@/components/university/UniversityEligibilityChecker";
+import UniversityRequirements from "@/components/university/UniversityRequirements";
+import UniversityCosts from "@/components/university/UniversityCosts";
+import UniversityPlacements from "@/components/university/UniversityPlacements";
+import UniversityScholarships from "@/components/university/UniversityScholarships";
+import UniversityReviews from "@/components/university/UniversityReviews";
+import UniversityLocation from "@/components/university/UniversityLocation";
+import UniversityComparisonCTA from "@/components/university/UniversityComparisonCTA";
+import UniversityApplicationTracker from "@/components/university/UniversityApplicationTracker";
+import UniversityAICounselor from "@/components/university/UniversityAICounselor";
+
+type Tab = "overview" | "programs" | "finance" | "outcomes" | "apply";
 
 const UniversityDetailPage = () => {
   const { id } = useParams();
@@ -44,7 +37,11 @@ const UniversityDetailPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
-  const { data: university, isLoading } = useUniversity(id || "");
+  const { data: apiUniversity, isLoading, error } = useUniversity(id || "");
+  const localUniversity = universitiesData.find(u => u.id === id);
+  const university = apiUniversity || localUniversity;
+
+  const isActuallyLoading = isLoading && !localUniversity;
 
   usePageMeta({
     title: university ? university.name : "University Not Found",
@@ -61,14 +58,14 @@ const UniversityDetailPage = () => {
     }, 1500);
   };
 
-  if (isLoading) {
+  if (isActuallyLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
         <Header />
-        <main className="pt-32 pb-20 flex items-center justify-center">
+        <main className="flex-1 flex items-center justify-center pt-32 pb-20">
           <div className="flex flex-col items-center gap-4">
              <div className="w-12 h-12 rounded-full border-4 border-accent border-t-transparent animate-spin" />
-             <p className="text-muted-foreground font-medium">Loading university profiles...</p>
+             <p className="text-muted-foreground font-medium">Analyzing university intelligence...</p>
           </div>
         </main>
         <Footer />
@@ -78,9 +75,9 @@ const UniversityDetailPage = () => {
 
   if (!university) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
         <Header />
-        <main className="pt-32 pb-20">
+        <main className="flex-1 pt-32 pb-20">
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-4xl font-bold mb-4">University Not Found</h1>
             <p className="text-muted-foreground mb-8">The university you're looking for doesn't exist.</p>
@@ -94,151 +91,34 @@ const UniversityDetailPage = () => {
     );
   }
 
-  const placements = getPlacementsForUniversity(university.id);
-  const ctcStats = getUniversityCTCStats(university.id);
-  const benchmark = getCountryBenchmark(university.country);
-  const avgRating = getAverageRating(university.id);
-
   const tabs: { id: Tab; label: string }[] = [
-    { id: "overview", label: "Overview" },
-    { id: "placements", label: `Placements${placements.length > 0 ? ` (${placements.length})` : ""}` },
-    { id: "reviews", label: `Reviews${avgRating > 0 ? ` · ★ ${avgRating.toFixed(1)}` : ""}` },
+    { id: "overview", label: "Overview & Campus" },
+    { id: "programs", label: "Programs & Eligibility" },
+    { id: "finance", label: "Costs & Scholarships" },
+    { id: "outcomes", label: "Placements & Reviews" },
+    { id: "apply", label: "Application Journey" },
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header />
 
-      <main>
-        {/* Hero Section */}
-        <section className="relative pt-20 overflow-hidden">
-          {/* Background Image */}
-          <div className="absolute inset-0 h-[600px]">
-            <img
-              src={university.image}
-              alt={university.name}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 via-slate-900/60 to-slate-900/40" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-slate-900/30 to-transparent" />
-          </div>
+      <main className="flex-1">
+        <UniversityHero university={university} />
 
-          <div className="container mx-auto px-4 relative z-10 py-20">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="max-w-4xl"
-            >
-              {/* Back Button */}
-              <Link
-                to="/universities"
-                className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-4 group"
-              >
-                <div className="w-8 h-8 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/20 transition-all">
-                  <ArrowLeft className="w-4 h-4" />
-                </div>
-                <span className="text-sm font-medium">Back to Universities</span>
-              </Link>
-
-              {/* Breadcrumb */}
-              <div className="flex items-center gap-2 text-sm text-white/80 mb-6">
-                <Link to="/universities" className="hover:text-white transition-colors">Universities</Link>
-                <span>/</span>
-                <span className="text-white font-medium">{university.name}</span>
-              </div>
-
-              {/* Logo & Title */}
-              <div className="flex items-start gap-6 mb-6">
-                <div className="w-20 h-20 rounded-2xl bg-white shadow-xl overflow-hidden flex items-center justify-center shrink-0">
-                  {university.logo.startsWith('http') ? (
-                    <img
-                      src={university.logo}
-                      alt={`${university.name} logo`}
-                      className="w-full h-full object-contain p-1.5"
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement)!.style.display = 'flex'; }}
-                    />
-                  ) : null}
-                  <span
-                    className="text-primary font-bold text-lg"
-                    style={{ display: university.logo.startsWith('http') ? 'none' : 'flex' }}
-                  >
-                    {university.logo.startsWith('http') ? university.name.split(' ').map(w => w[0]).join('').slice(0, 4) : university.logo}
-                  </span>
-                </div>
-                <div>
-                  <div className="flex items-center gap-3 mb-2 flex-wrap">
-                    <RankingBadge
-                      rank={university.ranking}
-                      source={university.rankingSource}
-                      updatedAt={university.rankingUpdatedAt}
-                      size="md"
-                      animate={true}
-                    />
-                    {university.featured && <FeaturedBadge size="sm" />}
-                    {avgRating > 0 && (
-                      <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white text-xs font-medium">
-                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                        {avgRating.toFixed(1)} student rating
-                      </span>
-                    )}
-                  </div>
-                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-white mb-2">
-                    {university.name}
-                  </h1>
-                  <div className="flex items-center gap-4 text-white/90 font-medium flex-wrap">
-                    <span className="flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4 text-white" />
-                      {university.location}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <Building className="w-4 h-4 text-white" />
-                      {university.type}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-lg text-white/90 max-w-3xl mb-8 leading-relaxed">
-                {university.description}
-              </p>
-
-              {/* Quick Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="glass-dark rounded-xl p-4">
-                  <p className="text-sm text-white/50 mb-1">Founded</p>
-                  <p className="text-xl font-bold text-white">{university.founded || "N/A"}</p>
-                </div>
-                <div className="glass-dark rounded-xl p-4">
-                  <p className="text-sm text-white/50 mb-1">Students</p>
-                  <p className="text-xl font-bold text-white">{university.students || "N/A"}</p>
-                </div>
-                <div className="glass-dark rounded-xl p-4">
-                  <p className="text-sm text-white/50 mb-1">Acceptance Rate</p>
-                  <p className="text-xl font-bold text-white">{university.acceptanceRate || "N/A"}</p>
-                </div>
-                <div className="glass-dark rounded-xl p-4">
-                  <p className="text-sm text-white/50 mb-1">Tuition</p>
-                  <p className="text-xl font-bold text-white">{university.tuitionRange || "N/A"}</p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Tab Navigation */}
-        <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border -mt-1">
+        {/* Sticky Tab Navigation */}
+        <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border/50 shadow-sm mt-8">
           <div className="container mx-auto px-4">
-            <div className="flex gap-0">
+            <div className="flex gap-2 md:gap-4 overflow-x-auto scrollbar-hide py-3">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
+                    "px-5 py-2.5 rounded-full text-sm font-semibold transition-all whitespace-nowrap",
                     activeTab === tab.id
-                      ? "border-accent text-accent"
-                      : "border-transparent text-muted-foreground hover:text-foreground"
+                      ? "bg-accent text-white shadow-md shadow-accent/20"
+                      : "bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground border border-transparent"
                   )}
                 >
                   {tab.label}
@@ -248,243 +128,96 @@ const UniversityDetailPage = () => {
           </div>
         </div>
 
-        {/* Main Content */}
-        <section className="py-16 relative z-10">
+        {/* Main Content Area */}
+        <section className="py-12 relative z-10">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left Column */}
-              <div className="lg:col-span-2 space-y-8">
-
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+              
+              {/* Left Column - Main Content (9 cols) */}
+              <div className="xl:col-span-8 space-y-12">
+                
                 {/* OVERVIEW TAB */}
                 {activeTab === "overview" && (
-                  <>
-                    {/* Why This University */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="premium-card p-8"
-                    >
-                      <h2 className="text-2xl font-serif font-bold text-foreground mb-6 flex items-center gap-3">
-                        <Award className="w-6 h-6 text-accent" />
-                        Why {university.name}?
-                      </h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex items-start gap-3">
-                          <CheckCircle className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                          <div>
-                            <p className="font-medium text-foreground">World-Class Faculty</p>
-                            <p className="text-sm text-muted-foreground">Learn from Nobel laureates and industry leaders</p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                          <CheckCircle className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                          <div>
-                            <p className="font-medium text-foreground">Research Excellence</p>
-                            <p className="text-sm text-muted-foreground">Cutting-edge research facilities and funding</p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                          <CheckCircle className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                          <div>
-                            <p className="font-medium text-foreground">Global Network</p>
-                            <p className="text-sm text-muted-foreground">Access to {university.students || "Thousands"} of alumni worldwide</p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                          <CheckCircle className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                          <div>
-                            <p className="font-medium text-foreground">Career Support</p>
-                            <p className="text-sm text-muted-foreground">{university.careerOutcomes?.employmentRate || "High"} employment rate</p>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-
-                    {/* Popular Programs */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      className="premium-card p-8"
-                    >
-                      <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
-                        <BookOpen className="w-6 h-6 text-accent" />
-                        Available Programs
-                      </h2>
-                      <div className="space-y-4">
-                        {university.courses.map((program, index) => (
-                          <div key={index} className="p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors">
-                            <div className="flex items-start justify-between gap-4">
-                              <div>
-                                <h3 className="font-semibold text-foreground">{program.name}</h3>
-                                <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                                  <span className="flex items-center gap-1">
-                                    <Clock className="w-4 h-4" />
-                                    {program.duration}
-                                  </span>
-                                  <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-medium">
-                                    {program.degreeLevel}
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <DollarSign className="w-4 h-4" />
-                                    {program.tuitionOriginal}
-                                  </span>
-                                </div>
-                              </div>
-                              <Link to={`/enquiry?course=${program.name}&university=${university.name}`}>
-                                <Button variant="outline" size="sm">Enquire Now</Button>
-                              </Link>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </motion.div>
-
-                    {/* Admission Requirements */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      className="premium-card p-8"
-                    >
-                      <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
-                        <GraduationCap className="w-6 h-6 text-accent" />
-                        Admission Requirements
-                      </h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="p-4 rounded-xl bg-secondary/50">
-                          <p className="text-sm text-muted-foreground mb-1">Minimum GPA</p>
-                          <p className="text-2xl font-bold text-foreground">{university.requirements?.gpa || "N/A"}</p>
-                          <Progress value={university.requirements ? (parseFloat(university.requirements.gpa) / 4 * 100) : 0} className="mt-2 h-2" />
-                        </div>
-                        <div className="p-4 rounded-xl bg-secondary/50">
-                          <p className="text-sm text-muted-foreground mb-1">IELTS Score</p>
-                          <p className="text-2xl font-bold text-foreground">{university.requirements?.ielts || "N/A"}</p>
-                          <Progress value={university.requirements ? (parseFloat(university.requirements.ielts) / 9 * 100) : 0} className="mt-2 h-2" />
-                        </div>
-                        <div className="p-4 rounded-xl bg-secondary/50">
-                          <p className="text-sm text-muted-foreground mb-1">TOEFL Score</p>
-                          <p className="text-2xl font-bold text-foreground">{university.requirements?.toefl || "N/A"}</p>
-                          <Progress value={university.requirements ? (parseFloat(university.requirements.toefl) / 120 * 100) : 0} className="mt-2 h-2" />
-                        </div>
-                        {university.requirements?.gre && (
-                          <div className="p-4 rounded-xl bg-secondary/50">
-                            <p className="text-sm text-muted-foreground mb-1">GRE Score</p>
-                            <p className="text-2xl font-bold text-foreground">{university.requirements.gre}</p>
-                            <Progress value={parseFloat(university.requirements.gre.replace('+', '')) / 340 * 100} className="mt-2 h-2" />
-                          </div>
-                        )}
-                        {university.requirements?.gmat && (
-                          <div className="p-4 rounded-xl bg-secondary/50">
-                            <p className="text-sm text-muted-foreground mb-1">GMAT Score</p>
-                            <p className="text-2xl font-bold text-foreground">{university.requirements.gmat}</p>
-                            <Progress value={parseFloat(university.requirements.gmat.replace('+', '')) / 800 * 100} className="mt-2 h-2" />
-                          </div>
-                        )}
-                      </div>
-                      {university.requirements?.other && (
-                        <div className="mt-4 p-4 rounded-xl bg-accent/10 border border-accent/20">
-                          <p className="text-sm font-medium text-accent">{university.requirements.other}</p>
-                        </div>
-                      )}
-                    </motion.div>
-
-                    {/* Career Outcomes */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      className="premium-card p-8"
-                    >
-                      <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
-                        <Briefcase className="w-6 h-6 text-accent" />
-                        Career Outcomes
-                      </h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div className="p-6 rounded-xl bg-success/10 border border-success/20 text-center">
-                          <TrendingUp className="w-8 h-8 text-success mx-auto mb-2" />
-                          <p className="text-3xl font-bold text-foreground">{university.careerOutcomes?.employmentRate || "N/A"}</p>
-                          <p className="text-sm text-muted-foreground">Employment Rate</p>
-                        </div>
-                        <div className="p-6 rounded-xl bg-accent/10 border border-accent/20 text-center">
-                          <DollarSign className="w-8 h-8 text-accent mx-auto mb-2" />
-                          <p className="text-3xl font-bold text-foreground">{university.careerOutcomes?.avgSalary || "N/A"}</p>
-                          <p className="text-sm text-muted-foreground">Average Starting Salary</p>
-                        </div>
-                      </div>
-                      {university.careerOutcomes?.topEmployers && (
-                        <div>
-                          <h4 className="text-sm font-medium text-muted-foreground mb-3">Top Employers</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {university.careerOutcomes.topEmployers.map((employer, i) => (
-                              <span key={i} className="px-4 py-2 rounded-lg bg-secondary text-sm font-medium text-foreground">
-                                {employer}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </motion.div>
-                  </>
-                )}
-
-                {/* PLACEMENTS TAB */}
-                {activeTab === "placements" && (
-                  <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-                    <PlacementOffersTable
-                      universityId={university.id}
-                      offers={placements}
-                      medianCTC={ctcStats.median}
-                      averageCTC={ctcStats.average}
-                      currency={ctcStats.currency}
-                      benchmark={benchmark}
-                    />
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-12"
+                  >
+                    <UniversityWhyChoose university={university} />
+                    <UniversityLocation university={university} />
                   </motion.div>
                 )}
 
-                {/* REVIEWS TAB */}
-                {activeTab === "reviews" && (
-                  <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-                    <FeedbackList universityId={university.id} universityName={university.name} />
+                {/* PROGRAMS TAB */}
+                {activeTab === "programs" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-12"
+                  >
+                    <UniversityEligibilityChecker university={university} />
+                    <UniversityCourses university={university} />
+                    <UniversityRequirements university={university} />
                   </motion.div>
                 )}
+
+                {/* FINANCE TAB */}
+                {activeTab === "finance" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-12"
+                  >
+                    <UniversityCosts university={university} />
+                    <UniversityScholarships university={university} />
+                  </motion.div>
+                )}
+
+                {/* OUTCOMES TAB */}
+                {activeTab === "outcomes" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-12"
+                  >
+                    <UniversityPlacements university={university} />
+                    <UniversityReviews university={university} />
+                  </motion.div>
+                )}
+
+                {/* APPLY TAB */}
+                {activeTab === "apply" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-12"
+                  >
+                    <UniversityApplicationTracker university={university} />
+                    <UniversityComparisonCTA university={university} />
+                  </motion.div>
+                )}
+
               </div>
 
-              {/* Right Column - Sticky CTA */}
-              <div className="lg:col-span-1">
-                <div className="sticky top-24 space-y-6">
-                  {/* Eligibility CTA */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="premium-card p-6"
-                  >
-                    <h3 className="text-lg font-bold text-foreground mb-4">Check Your Eligibility</h3>
-                    <p className="text-sm text-muted-foreground mb-6">
-                      Find out if you qualify for admission to {university.name} based on your profile.
-                    </p>
-                    <Link to="/enquiry">
-                      <Button className="w-full bg-accent hover:bg-accent/90 text-white" size="lg">
-                        Check Eligibility
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
-                    </Link>
-                  </motion.div>
-
+              {/* Right Column - Sticky Sidebar (3 cols) */}
+              <div className="xl:col-span-4">
+                <div className="sticky top-28 space-y-6">
+                  
                   {/* Apply CTA */}
                   <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="premium-card p-6 bg-gradient-to-br from-primary to-primary/90 text-white"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="premium-card p-6 bg-gradient-to-br from-primary to-primary/90 text-white relative overflow-hidden"
                   >
-                    <h3 className="text-lg font-bold mb-2">Ready to Apply?</h3>
-                    <p className="text-sm text-white/70 mb-4">
-                      Get personalized guidance and priority processing as a Premium Member.
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-full pointer-events-none" />
+                    <h3 className="text-xl font-bold mb-2 relative z-10">Premium Admission</h3>
+                    <p className="text-sm text-white/80 mb-6 relative z-10">
+                      Let our expert advisors manage your entire application journey to {university.name}.
                     </p>
+                    
                     {(!user || user.role === "user") ? (
-                      <div className="space-y-3">
+                      <div className="space-y-3 relative z-10">
                         <Button
                           variant="outline"
                           className="w-full bg-white/10 text-white border-white/20 hover:bg-white/20 cursor-not-allowed"
@@ -494,97 +227,82 @@ const UniversityDetailPage = () => {
                           Premium Members Only
                         </Button>
                         {!user ? (
-                          <Button onClick={() => navigate("/login")} className="w-full bg-white text-primary hover:bg-white/90" size="sm">
+                          <Button onClick={() => navigate("/login")} className="w-full bg-white text-primary hover:bg-white/90 font-bold" size="sm">
                             Log in to Unlock
                           </Button>
                         ) : (
-                          <Button onClick={() => navigate("/premium-plans")} className="w-full bg-accent text-white hover:bg-accent/90" size="sm">
+                          <Button onClick={() => navigate("/premium-plans")} className="w-full bg-accent text-white hover:bg-accent/90 font-bold" size="sm">
                             Upgrade to Premium
                           </Button>
                         )}
                       </div>
                     ) : isSubmitted ? (
-                      <div className="p-4 bg-green-500/20 border border-green-500 rounded-lg text-center backdrop-blur-sm">
-                        <CheckCircle className="w-6 h-6 mx-auto mb-2 text-green-400" />
-                        <p className="font-bold text-white mb-1">Application Submitted!</p>
-                        <p className="text-xs text-white/80">Our premium advisors will contact you shortly.</p>
+                      <div className="p-4 bg-emerald-500/20 border border-emerald-500/50 rounded-xl text-center backdrop-blur-sm relative z-10">
+                        <CheckCircle className="w-8 h-8 mx-auto mb-2 text-emerald-400" />
+                        <p className="font-bold text-white mb-1">Application Sent to Advisor</p>
+                        <p className="text-xs text-white/80">We will contact you within 24 hours.</p>
                       </div>
                     ) : (
                       <Button
                         onClick={handlePremiumApply}
-                        className="w-full bg-white text-primary hover:bg-white/90"
+                        className="w-full bg-white text-primary hover:bg-white/90 font-bold h-12 relative z-10"
                         size="lg"
                         disabled={isSubmitting}
                       >
-                        {isSubmitting ? "Submitting..." : "Start Premium Application"}
+                        {isSubmitting ? "Initiating..." : "Start Guaranteed Application"}
                         {!isSubmitting && <ArrowRight className="w-4 h-4 ml-2" />}
                       </Button>
                     )}
                   </motion.div>
 
-                  {/* Quick Contact */}
-                  <div className="premium-card p-6">
-                    <h4 className="text-sm font-medium text-muted-foreground mb-4">Need Help?</h4>
-                    <div className="space-y-3 text-sm">
-                      <a href="tel:+1234567890" className="flex items-center gap-2 text-foreground hover:text-accent transition-colors">
-                        <span>📞</span> +1 (234) 567-890
-                      </a>
-                      <a href="mailto:info@akshayaakademics.com" className="flex items-center gap-2 text-foreground hover:text-accent transition-colors">
-                        <span>✉️</span> info@akshayaakademics.com
-                      </a>
-                    </div>
-                  </div>
+                  {/* AI Counselor */}
+                  <UniversityAICounselor university={university} />
+
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Related Universities */}
-        <section className="py-16 bg-secondary/30">
+        {/* Global Related Universities Footer */}
+        <section className="py-16 bg-secondary/20 border-t border-border/50">
           <div className="container mx-auto px-4">
-            <h2 className="text-2xl font-bold text-foreground mb-8">Similar Universities</h2>
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold text-foreground">Explore Similar Options</h2>
+              <Link to="/universities">
+                <Button variant="link" className="text-accent">View all <ArrowRight className="w-4 h-4 ml-1" /></Button>
+              </Link>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {universitiesData
                 .filter((u) => u.country === university.country && u.id !== university.id)
                 .slice(0, 3)
                 .map((uni) => (
                   <Link key={uni.id} to={`/universities/${uni.id}`} className="block">
-                    <div className="university-card group">
-                      <div className="relative h-40 overflow-hidden">
+                    <div className="premium-card p-0 group overflow-hidden">
+                      <div className="relative h-48 overflow-hidden">
                         <img
                           src={uni.image}
                           alt={uni.name}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                        <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                          <div className="w-10 h-10 rounded-lg bg-white shadow overflow-hidden flex items-center justify-center">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        <div className="absolute bottom-4 left-4 flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-xl bg-white shadow-xl overflow-hidden flex items-center justify-center p-1">
                             {uni.logo.startsWith('http') ? (
-                              <img
-                                src={uni.logo}
-                                alt={`${uni.name} logo`}
-                                className="w-full h-full object-contain p-0.5"
-                                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement)!.style.display = 'flex'; }}
-                              />
-                            ) : null}
-                            <span
-                              className="text-primary font-bold text-xs"
-                              style={{ display: uni.logo.startsWith('http') ? 'none' : 'flex' }}
-                            >
-                              {uni.logo.startsWith('http') ? uni.name.split(' ').map(w => w[0]).join('').slice(0, 3) : uni.logo}
-                            </span>
+                              <img src={uni.logo} alt={uni.name} className="w-full h-full object-contain" />
+                            ) : (
+                              <span className="text-primary font-bold">{uni.logo}</span>
+                            )}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-white line-clamp-1">{uni.name}</h3>
+                            <p className="text-xs text-white/70">{uni.location}</p>
                           </div>
                         </div>
-                        <div className="absolute top-3 right-3">
-                          <RankingBadge rank={uni.ranking} source={uni.rankingSource} updatedAt={uni.rankingUpdatedAt} size="sm" />
+                        <div className="absolute top-4 right-4">
+                          <RankingBadge rank={uni.ranking} source={uni.rankingSource} updatedAt={uni.rankingUpdatedAt} size="sm" animate={false} />
                         </div>
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold text-foreground group-hover:text-accent transition-colors line-clamp-1">
-                          {uni.name}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">{uni.location}</p>
                       </div>
                     </div>
                   </Link>

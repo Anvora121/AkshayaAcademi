@@ -99,6 +99,7 @@ export function getPlacementsForUniversity(universityId: string): PlacementOffer
 export function getUniversityCTCStats(universityId: string): {
   median: number;
   average: number;
+  highest: number;
   currency: string;
   count: number;
 } {
@@ -107,7 +108,7 @@ export function getUniversityCTCStats(universityId: string): {
   );
 
   if (offers.length === 0) {
-    return { median: 0, average: 0, currency: "USD", count: 0 };
+    return { median: 0, average: 0, highest: 0, currency: "USD", count: 0 };
   }
 
   const midpoints = offers.map((o) => (o.ctcMin + o.ctcMax) / 2).sort((a, b) => a - b);
@@ -117,10 +118,13 @@ export function getUniversityCTCStats(universityId: string): {
     midpoints.length % 2 === 0
       ? (midpoints[mid - 1] + midpoints[mid]) / 2
       : midpoints[mid];
+  
+  const highest = Math.max(...offers.map(o => o.ctcMax));
 
   return {
     median: Math.round(median),
     average: Math.round(avg),
+    highest: highest,
     currency: offers[0].currency,
     count: offers.length,
   };
