@@ -57,7 +57,7 @@ export const LoginForm = () => {
             } else if (data.user.onboardingComplete === false) {
                 navigate('/register', { replace: true, state: { step: data.user.onboardingStep || 2 } });
             } else {
-                navigate('/dashboard/user', { replace: true });
+                navigate('/', { replace: true });
             }
         } catch (err: any) {
             toast.error(err.message || 'An error occurred. Please try again.');

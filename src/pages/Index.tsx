@@ -5,6 +5,7 @@ import AuthorityStrip from "@/components/home/AuthorityStrip";
 import Services from "@/components/home/Services";
 import Countries from "@/components/home/Countries";
 import Journey from "@/components/home/Journey";
+import UniversityNews from "@/components/home/UniversityNews";
 import CTA from "@/components/home/CTA";
 
 const Index = () => {
@@ -13,6 +14,7 @@ const Index = () => {
       <Header />
       <main>
         <Hero />
+        <UniversityNews />
         <AuthorityStrip />
         <Services />
         <Countries />
