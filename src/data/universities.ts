@@ -69,7 +69,7 @@ const FEATURED_IDS = new Set([
   // Switzerland (10)
   'eth', 'epfl', 'unige', 'unibern', 'unibasel', 'unil', 'uzurich', 'unisg', 'unifr', 'unilu',
   // Netherlands (10)
-  'delft', 'uva', 'leiden', 'utrecht', 'rug', 'eur', 'tue', 'ru', 'uvt', 'vu',
+  'delft', 'uva_nl', 'leiden', 'utrecht', 'rug', 'eur', 'tue', 'ru', 'uvt', 'vu',
   // Sweden (10)
   'karolinska', 'lund', 'su', 'kth', 'uu', 'chalmers', 'gu', 'umu', 'liu', 'oru',
 ]);
@@ -1726,7 +1726,7 @@ const _rawUniversitiesData: RawUniversity[] = [
     },
   },
   {
-    id: "uva",
+    id: "uva_nl",
     name: "University of Amsterdam",
     country: "netherlands",
     countryName: "Netherlands",
@@ -1735,7 +1735,7 @@ const _rawUniversitiesData: RawUniversity[] = [
     courses: ["Media", "Communication", "Social Sciences", "Economics", "Law", "Psychology"],
     type: "Public Research University",
     logo: "https://upload.wikimedia.org/wikipedia/commons/d/d1/Amsterdamuniversitylogo.svg",
-    image: "/universities/virginia.jpg",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/University_Sports_Center.jpg/1280px-University_Sports_Center.jpg",
     description: "UvA is a leading European research university, known for its communication science and social science programs.",
     founded: "1632",
     students: "34,000+",
