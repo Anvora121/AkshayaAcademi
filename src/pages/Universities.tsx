@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -12,6 +12,7 @@ import {
   GraduationCap,
   Star,
   ChevronRight,
+  ChevronLeft,
   Users,
   TrendingUp,
   Filter,
@@ -24,7 +25,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { universitiesData, countryImages, countries } from "@/data/universities";
-import { useInfiniteUniversities } from "@/hooks/useUniversities";
+import { usePaginatedUniversities } from "@/hooks/useUniversities";
 import type { University } from "@/hooks/useUniversities";
 import { getAverageRating } from "@/data/mockFeedback";
 import RankingBadge from "@/components/ui/RankingBadge";
@@ -33,6 +34,21 @@ import { useComparison } from "@/contexts/ComparisonContext";
 
 type RankFilter = "all" | "top10" | "top50" | "top100";
 type SortOrder = "default" | "rank-asc" | "rank-desc";
+
+const PAGE_SIZE = 12;
+
+function getPageRange(current: number, total: number): (number | "...")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const range: (number | "...")[] = [];
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  range.push(1);
+  if (start > 2) range.push("...");
+  for (let i = start; i <= end; i++) range.push(i);
+  if (end < total - 1) range.push("...");
+  range.push(total);
+  return range;
+}
 
 const UniversityCardSkeleton = () => (
   <div className="university-card animate-pulse">
@@ -51,6 +67,70 @@ const UniversityCardSkeleton = () => (
   </div>
 );
 
+const PaginationBar = ({
+  current,
+  total,
+  onChange,
+}: {
+  current: number;
+  total: number;
+  onChange: (page: number) => void;
+}) => {
+  if (total <= 1) return null;
+  const pages = getPageRange(current, total);
+
+  return (
+    <div className="flex items-center justify-center gap-1.5 mt-10">
+      <button
+        type="button"
+        onClick={() => onChange(current - 1)}
+        disabled={current === 1}
+        aria-label="Previous page"
+        className="w-9 h-9 rounded-lg border border-border flex items-center justify-center text-sm font-medium hover:border-accent hover:text-accent transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        <ChevronLeft className="w-4 h-4" />
+      </button>
+
+      {pages.map((p, i) =>
+        p === "..." ? (
+          <span
+            key={`ellipsis-${i}`}
+            className="w-9 h-9 flex items-center justify-center text-muted-foreground text-sm select-none"
+          >
+            ···
+          </span>
+        ) : (
+          <button
+            key={p}
+            type="button"
+            onClick={() => onChange(p as number)}
+            aria-label={`Page ${p}`}
+            aria-current={current === p ? "page" : undefined}
+            className={cn(
+              "w-9 h-9 rounded-lg border text-sm font-medium transition-all",
+              current === p
+                ? "bg-accent text-white border-accent"
+                : "border-border hover:border-accent hover:text-accent"
+            )}
+          >
+            {p}
+          </button>
+        )
+      )}
+
+      <button
+        type="button"
+        onClick={() => onChange(current + 1)}
+        disabled={current === total}
+        aria-label="Next page"
+        className="w-9 h-9 rounded-lg border border-border flex items-center justify-center text-sm font-medium hover:border-accent hover:text-accent transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        <ChevronRight className="w-4 h-4" />
+      </button>
+    </div>
+  );
+};
+
 const UniversitiesPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -60,7 +140,8 @@ const UniversitiesPage = () => {
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [rankFilter, setRankFilter] = useState<RankFilter>("all");
   const [sortOrder, setSortOrder] = useState<SortOrder>("default");
-  const sentinelRef = useRef<HTMLDivElement>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const { compareList, addToCompare, removeFromCompare, isInCompare, isFull } = useComparison();
 
@@ -69,6 +150,16 @@ const UniversitiesPage = () => {
     description: "Discover 330+ top-ranked universities across 11 countries. Filter by country, rank, and more to find your perfect match.",
     canonicalPath: "/universities",
   });
+
+  // Reset to page 1 whenever server-side filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCountry, searchQuery]);
+
+  // Also reset to page 1 when client-side filters change (rank filter, sort)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [rankFilter, sortOrder]);
 
   const countryKeys = Object.keys(countryImages).filter((k) => k !== "all");
   useEffect(() => {
@@ -85,48 +176,54 @@ const UniversitiesPage = () => {
       ? countryImages[countryKeys[currentBgIndex]]
       : countryImages[activeCountry] || countryImages.all;
 
-  const {
-    data,
-    isLoading,
-    isFetchingNextPage,
-    fetchNextPage,
-    hasNextPage,
-    error,
-  } = useInfiniteUniversities({ country: activeCountry, search: searchQuery });
+  const { data, isLoading, isFetching, error } = usePaginatedUniversities(
+    { country: activeCountry, search: searchQuery },
+    currentPage,
+    PAGE_SIZE
+  );
 
-  // Flatten all pages
-  const apiUniversities: University[] = data
-    ? data.pages.flatMap((page) => page.universities)
-    : [];
+  const apiUniversities: University[] = data?.universities || [];
+  const pagination = data?.pagination;
 
-  // Fall back to local data if API is down or empty
-  const shouldFallback = !!error || (!isLoading && apiUniversities.length === 0);
-  const universitiesSource: University[] = shouldFallback
-    ? (universitiesData as unknown as University[])
-    : apiUniversities;
+  const shouldFallback = !!error || (!isLoading && !isFetching && apiUniversities.length === 0 && !data);
 
-  // Apply frontend rank filter + sort (search/country are server-side)
-  const filteredUniversities = universitiesSource
+  // Local pagination for fallback (API down)
+  const localFiltered = (universitiesData as unknown as University[]).filter((uni) => {
+    const matchesCountry = activeCountry === "all" || uni.country === activeCountry;
+    const matchesSearch =
+      uni.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      uni.location.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCountry && matchesSearch;
+  });
+  const localSorted = [...localFiltered].sort((a, b) => {
+    if (sortOrder === "rank-asc") return a.ranking - b.ranking;
+    if (sortOrder === "rank-desc") return b.ranking - a.ranking;
+    return 0;
+  });
+  const localTotal = localSorted.length;
+  const localPages = Math.ceil(localTotal / PAGE_SIZE) || 1;
+  const localPageData = localSorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  // Apply client-side rank filter + sort on the page's data
+  const sourceData = shouldFallback ? localPageData : apiUniversities;
+  const filteredUniversities = sourceData
     .filter((uni) => {
-      const matchesCountry = activeCountry === "all" || uni.country === activeCountry;
-      const matchesSearch =
-        uni.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        uni.location.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesRank =
-        rankFilter === "all"
-          ? true
-          : rankFilter === "top10"
-          ? uni.ranking <= 10
-          : rankFilter === "top50"
-          ? uni.ranking <= 50
-          : uni.ranking <= 100;
-      return matchesCountry && matchesSearch && matchesRank;
+      if (rankFilter === "all") return true;
+      if (rankFilter === "top10") return uni.ranking <= 10;
+      if (rankFilter === "top50") return uni.ranking <= 50;
+      return uni.ranking <= 100;
     })
     .sort((a, b) => {
       if (sortOrder === "rank-asc") return a.ranking - b.ranking;
       if (sortOrder === "rank-desc") return b.ranking - a.ranking;
       return 0;
     });
+
+  const totalPages = shouldFallback ? localPages : pagination?.pages || 1;
+  const totalUniversities = shouldFallback ? localTotal : pagination?.total || 0;
+
+  const pageStart = (currentPage - 1) * PAGE_SIZE + 1;
+  const pageEnd = Math.min(currentPage * PAGE_SIZE, totalUniversities);
 
   const featuredCount = filteredUniversities.filter((u) => u.featured).length;
 
@@ -140,28 +237,16 @@ const UniversitiesPage = () => {
     setSortOrder("default");
     setSearchQuery("");
     setActiveCountry("all");
+    setCurrentPage(1);
   };
 
   const hasActiveFilters =
     rankFilter !== "all" || sortOrder !== "default" || searchQuery !== "" || activeCountry !== "all";
 
-  // Intersection Observer for infinite scroll
-  const handleObserver = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage && !shouldFallback) {
-        fetchNextPage();
-      }
-    },
-    [hasNextPage, isFetchingNextPage, fetchNextPage, shouldFallback]
-  );
-
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(handleObserver, { rootMargin: "200px" });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [handleObserver]);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const handleCompareToggle = (e: React.MouseEvent, uni: University) => {
     e.preventDefault();
@@ -327,7 +412,7 @@ const UniversitiesPage = () => {
         </section>
 
         {/* Universities Grid */}
-        <section className="py-12">
+        <section className="py-12" ref={gridRef}>
           <div className="container mx-auto px-4">
             {!!error && (
               <div className="mb-6 rounded-xl border border-amber-200/40 bg-amber-50/40 px-4 py-3 text-sm text-amber-900">
@@ -337,22 +422,37 @@ const UniversitiesPage = () => {
 
             {/* Results bar */}
             <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
-              <p className="text-muted-foreground">
-                Showing{" "}
-                <span className="font-semibold text-foreground">{filteredUniversities.length}</span>{" "}
-                {shouldFallback || !hasNextPage ? "" : "of many"} universities
-                {featuredCount > 0 && (
-                  <span className="ml-2 text-amber-500 font-medium text-sm">· {featuredCount} featured</span>
-                )}
-                {activeCountry !== "all" && (
-                  <span className="ml-1">
-                    {" "}in{" "}
-                    <span className="font-semibold text-foreground">
-                      {countries.find((c) => c.id === activeCountry)?.name}
+              <div className="flex items-center gap-3">
+                <p className="text-muted-foreground">
+                  {totalUniversities > 0 ? (
+                    <>
+                      Showing{" "}
+                      <span className="font-semibold text-foreground">
+                        {pageStart}–{pageEnd}
+                      </span>{" "}
+                      of{" "}
+                      <span className="font-semibold text-foreground">{totalUniversities}</span>{" "}
+                      universities
+                    </>
+                  ) : (
+                    <span className="font-semibold text-foreground">Searching...</span>
+                  )}
+                  {featuredCount > 0 && (
+                    <span className="ml-2 text-amber-500 font-medium text-sm">· {featuredCount} featured</span>
+                  )}
+                  {activeCountry !== "all" && (
+                    <span className="ml-1">
+                      {" "}in{" "}
+                      <span className="font-semibold text-foreground">
+                        {countries.find((c) => c.id === activeCountry)?.name}
+                      </span>
                     </span>
-                  </span>
+                  )}
+                </p>
+                {isFetching && !isLoading && (
+                  <div className="w-4 h-4 rounded-full border-2 border-accent border-t-transparent animate-spin" />
                 )}
-              </p>
+              </div>
               {hasActiveFilters && (
                 <button
                   type="button"
@@ -366,7 +466,7 @@ const UniversitiesPage = () => {
 
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 12 }).map((_, i) => (
+                {Array.from({ length: PAGE_SIZE }).map((_, i) => (
                   <UniversityCardSkeleton key={i} />
                 ))}
               </div>
@@ -502,18 +602,18 @@ const UniversitiesPage = () => {
                   })}
                 </div>
 
-                {/* Infinite scroll sentinel */}
-                <div ref={sentinelRef} className="h-8 mt-8 flex items-center justify-center">
-                  {isFetchingNextPage && (
-                    <div className="flex items-center gap-3 text-muted-foreground text-sm">
-                      <div className="w-5 h-5 rounded-full border-2 border-accent border-t-transparent animate-spin" />
-                      Loading more universities...
-                    </div>
-                  )}
-                  {!hasNextPage && !shouldFallback && filteredUniversities.length > 0 && (
-                    <p className="text-xs text-muted-foreground">All universities loaded</p>
-                  )}
-                </div>
+                {/* Pagination */}
+                <PaginationBar
+                  current={currentPage}
+                  total={totalPages}
+                  onChange={handlePageChange}
+                />
+
+                {totalPages > 1 && (
+                  <p className="text-center text-xs text-muted-foreground mt-3">
+                    Page {currentPage} of {totalPages}
+                  </p>
+                )}
               </>
             )}
           </div>
