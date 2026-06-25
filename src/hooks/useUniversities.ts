@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { API_BASE_URL } from "@/config";
 
 export interface University {
@@ -73,6 +73,37 @@ export const useUniversity = (id: string) => {
             return response.json() as Promise<University & { courses: Course[] }>;
         },
         enabled: !!id
+    });
+};
+
+interface PaginatedUniversitiesResponse {
+    universities: University[];
+    pagination: { total: number; page: number; pages: number; limit: number };
+}
+
+export const useInfiniteUniversities = (
+    filters: { country?: string; search?: string; featured?: boolean } = {},
+    pageSize = 12
+) => {
+    return useInfiniteQuery<PaginatedUniversitiesResponse>({
+        queryKey: ['universities-infinite', filters, pageSize],
+        queryFn: async ({ pageParam = 1 }) => {
+            const params = new URLSearchParams();
+            if (filters.country && filters.country !== 'all') params.append('country', filters.country);
+            if (filters.search) params.append('search', filters.search);
+            if (filters.featured) params.append('featured', 'true');
+            params.append('page', String(pageParam));
+            params.append('limit', String(pageSize));
+
+            const response = await fetch(`${API_BASE_URL}/universities?${params.toString()}`);
+            if (!response.ok) throw new Error('Failed to fetch universities');
+            return response.json() as Promise<PaginatedUniversitiesResponse>;
+        },
+        getNextPageParam: (lastPage) => {
+            const { page, pages } = lastPage.pagination;
+            return page < pages ? page + 1 : undefined;
+        },
+        initialPageParam: 1,
     });
 };
 

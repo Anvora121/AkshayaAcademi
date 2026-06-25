@@ -16,6 +16,8 @@ import universityRoutes from './routes/universities';
 import onboardingRoutes from './routes/onboarding';
 import uploadsRoutes from './routes/uploads';
 import adminRoutes from './routes/admin';
+import newsRoutes from './routes/news';
+import { startCronJobs } from './cron/newsCron';
 
 dotenv.config();
 
@@ -100,6 +102,7 @@ app.use('/api/universities', universityRoutes);
 app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/uploads', uploadsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/news', newsRoutes);
 
 // Database Connection
 console.log('Connecting to MongoDB...');
@@ -119,6 +122,7 @@ mongoose
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`);
+    startCronJobs();
 });
 
 

@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { ComparisonProvider } from "./contexts/ComparisonContext";
 import { ProtectedRoute, RoleRoute } from "./components/auth/ProtectedRoute";
 import LoginForm from "./components/auth/LoginForm";
 import UserDashboard from "./pages/dashboard/UserDashboard";
@@ -24,6 +25,9 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import Unauthorized from "./pages/Unauthorized";
 import ForgotPassword from "./pages/ForgotPassword";
 import RegisterPage from "./pages/RegisterPage";
+import UniversityComparison from "./pages/UniversityComparison";
+import NewsPage from "./pages/News";
+import NewsDetailPage from "./pages/NewsDetail";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +50,7 @@ const App = () => (
     <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
+                <ComparisonProvider>
                 <TooltipProvider>
                     <Toaster />
                     <Sonner />
@@ -57,6 +62,9 @@ const App = () => (
                             <Route path="/education" element={<Education />} />
                             <Route path="/universities" element={<Universities />} />
                             <Route path="/universities/:id" element={<UniversityDetail />} />
+                            <Route path="/compare" element={<UniversityComparison />} />
+                            <Route path="/news" element={<NewsPage />} />
+                            <Route path="/news/:slug" element={<NewsDetailPage />} />
                             <Route path="/enquiry" element={<Enquiry />} />
                             <Route path="/premium-plans" element={<PremiumPlans />} />
                             <Route path="/privacy" element={<Privacy />} />
@@ -127,6 +135,7 @@ const App = () => (
                         </Routes>
                     </BrowserRouter>
                 </TooltipProvider>
+                </ComparisonProvider>
             </AuthProvider>
         </QueryClientProvider>
     </ErrorBoundary>

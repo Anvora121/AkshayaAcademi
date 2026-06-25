@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 const router = express.Router();
 import { sendEmail } from '../utils/email';
+import { CounselorLead } from '../models/CounselorLead';
 
 // @route   POST /api/enquiries
 // @desc    Receive an enquiry form submission and send email via EmailJS
@@ -43,6 +44,27 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     } catch (error: any) {
         console.error('Failed to process enquiry:', error);
         res.status(500).json({ message: 'Failed to send enquiry. Please try again later.' });
+    }
+});
+
+// @route   POST /api/enquiries/counselor
+// @desc    Submit a counselor enquiry, save as CounselorLead
+// @access  Public
+router.post('/counselor', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { name, email, phone, universityName, message } = req.body;
+
+        if (!name || !email || !phone) {
+            res.status(400).json({ message: 'Name, email and phone are required' });
+            return;
+        }
+
+        await CounselorLead.create({ name, email, phone, universityName, message });
+
+        res.status(201).json({ message: 'Your counselor request has been received. We will contact you within 24 hours.' });
+    } catch (error) {
+        console.error('Failed to save counselor lead:', error);
+        res.status(500).json({ message: 'Failed to submit request. Please try again.' });
     }
 });
 

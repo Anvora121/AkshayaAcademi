@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { 
-    Users, Briefcase, Activity, BarChart2, CheckCircle, 
-    LogOut, Settings, PanelLeftClose, PanelLeftOpen, Globe, Building2
+import {
+    Users, Briefcase, Activity, BarChart2, CheckCircle,
+    LogOut, Settings, PanelLeftClose, PanelLeftOpen, Globe, Building2, Newspaper, Rss
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -12,8 +12,10 @@ import { StudentsTable } from '../../components/admin/StudentsTable';
 import { UniversitiesManager } from '../../components/admin/UniversitiesManager';
 import { CountriesManager } from '../../components/admin/CountriesManager';
 import { ApplicationsTracker } from '../../components/admin/ApplicationsTracker';
+import { NewsManager } from '../../components/admin/NewsManager';
+import { NewsSourcesManager } from '../../components/admin/NewsSourcesManager';
 
-type AdminTab = 'overview' | 'students' | 'universities' | 'countries' | 'applications';
+type AdminTab = 'overview' | 'students' | 'universities' | 'countries' | 'applications' | 'news' | 'rss-sources';
 
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
@@ -26,6 +28,8 @@ const AdminDashboard = () => {
         { id: 'applications', label: 'Applications', icon: Briefcase },
         { id: 'universities', label: 'Universities', icon: Building2 },
         { id: 'countries', label: 'Countries', icon: Globe },
+        { id: 'news', label: 'News', icon: Newspaper },
+        { id: 'rss-sources', label: 'RSS Sources', icon: Rss },
     ];
 
     return (
@@ -43,7 +47,7 @@ const AdminDashboard = () => {
                             <span className="font-bold tracking-tight text-lg">Admin View</span>
                         </motion.div>
                     )}
-                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-muted-foreground hover:text-foreground">
+                    <button type="button" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-muted-foreground hover:text-foreground">
                         {isSidebarOpen ? <PanelLeftClose className="w-5 h-5"/> : <PanelLeftOpen className="w-5 h-5 mx-auto"/> }
                     </button>
                 </div>
@@ -55,6 +59,7 @@ const AdminDashboard = () => {
                         const isActive = activeTab === item.id;
                         return (
                             <button
+                                type="button"
                                 key={item.id}
                                 onClick={() => setActiveTab(item.id)}
                                 className={cn(
@@ -80,7 +85,8 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="p-4 border-t border-border/50">
-                    <button 
+                    <button
+                        type="button"
                         onClick={logout}
                         className={cn(
                             "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-500 hover:bg-red-500/10 transition-colors",
@@ -132,6 +138,8 @@ const AdminDashboard = () => {
                             {activeTab === 'universities' && <UniversitiesManager />}
                             {activeTab === 'countries' && <CountriesManager />}
                             {activeTab === 'applications' && <ApplicationsTracker />}
+                            {activeTab === 'news' && <NewsManager />}
+                            {activeTab === 'rss-sources' && <NewsSourcesManager />}
                         </motion.div>
                     </AnimatePresence>
                 </div>

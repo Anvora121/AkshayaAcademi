@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -17,26 +17,52 @@ import {
   Filter,
   SortAsc,
   SortDesc,
+  Scale,
+  Plus,
+  Check,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { universitiesData, countryImages, countries } from "@/data/universities";
-import { useUniversities } from "@/hooks/useUniversities";
+import { useInfiniteUniversities } from "@/hooks/useUniversities";
+import type { University } from "@/hooks/useUniversities";
 import { getAverageRating } from "@/data/mockFeedback";
 import RankingBadge from "@/components/ui/RankingBadge";
 import FeaturedBadge from "@/components/ui/FeaturedBadge";
+import { useComparison } from "@/contexts/ComparisonContext";
 
 type RankFilter = "all" | "top10" | "top50" | "top100";
 type SortOrder = "default" | "rank-asc" | "rank-desc";
 
+const UniversityCardSkeleton = () => (
+  <div className="university-card animate-pulse">
+    <div className="h-48 bg-secondary/60 rounded-t-xl" />
+    <div className="p-5 space-y-3">
+      <div className="flex gap-3">
+        <div className="w-8 h-8 bg-secondary/60 rounded-full shrink-0" />
+        <div className="flex-1 space-y-2">
+          <div className="h-4 bg-secondary/60 rounded w-3/4" />
+          <div className="h-3 bg-secondary/40 rounded w-1/2" />
+        </div>
+      </div>
+      <div className="h-3 bg-secondary/40 rounded w-1/4" />
+      <div className="h-9 bg-secondary/60 rounded-lg mt-auto" />
+    </div>
+  </div>
+);
+
 const UniversitiesPage = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const initialCountry = searchParams.get("country") || "all";
   const [activeCountry, setActiveCountry] = useState(initialCountry);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [rankFilter, setRankFilter] = useState<RankFilter>("all");
   const [sortOrder, setSortOrder] = useState<SortOrder>("default");
-  const [showFilters, setShowFilters] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const { compareList, addToCompare, removeFromCompare, isInCompare, isFull } = useComparison();
 
   usePageMeta({
     title: "Explore Universities",
@@ -44,7 +70,6 @@ const UniversitiesPage = () => {
     canonicalPath: "/universities",
   });
 
-  // Rotate backgrounds when "all" is selected
   const countryKeys = Object.keys(countryImages).filter((k) => k !== "all");
   useEffect(() => {
     if (activeCountry === "all") {
@@ -60,17 +85,27 @@ const UniversitiesPage = () => {
       ? countryImages[countryKeys[currentBgIndex]]
       : countryImages[activeCountry] || countryImages.all;
 
-  // Fetch universities from API
-  const { data: universities = [], isLoading, error } = useUniversities({
-    country: activeCountry,
-    search: searchQuery
-  });
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+    error,
+  } = useInfiniteUniversities({ country: activeCountry, search: searchQuery });
 
-  // If API is down / empty (common in fresh setups), fall back to bundled dataset
-  const shouldFallbackToLocal = !!error || (!isLoading && universities.length === 0);
-  const universitiesSource = shouldFallbackToLocal ? universitiesData : universities;
+  // Flatten all pages
+  const apiUniversities: University[] = data
+    ? data.pages.flatMap((page) => page.universities)
+    : [];
 
-  // Filter + sort (for rank filter which is frontend-only for now)
+  // Fall back to local data if API is down or empty
+  const shouldFallback = !!error || (!isLoading && apiUniversities.length === 0);
+  const universitiesSource: University[] = shouldFallback
+    ? (universitiesData as unknown as University[])
+    : apiUniversities;
+
+  // Apply frontend rank filter + sort (search/country are server-side)
   const filteredUniversities = universitiesSource
     .filter((uni) => {
       const matchesCountry = activeCountry === "all" || uni.country === activeCountry;
@@ -100,7 +135,6 @@ const UniversitiesPage = () => {
     return country?.flag || "🌍";
   };
 
-  // Clear all filters
   const clearFilters = () => {
     setRankFilter("all");
     setSortOrder("default");
@@ -111,6 +145,34 @@ const UniversitiesPage = () => {
   const hasActiveFilters =
     rankFilter !== "all" || sortOrder !== "default" || searchQuery !== "" || activeCountry !== "all";
 
+  // Intersection Observer for infinite scroll
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage && !shouldFallback) {
+        fetchNextPage();
+      }
+    },
+    [hasNextPage, isFetchingNextPage, fetchNextPage, shouldFallback]
+  );
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(handleObserver, { rootMargin: "200px" });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [handleObserver]);
+
+  const handleCompareToggle = (e: React.MouseEvent, uni: University) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isInCompare(uni.id)) {
+      removeFromCompare(uni.id);
+    } else {
+      addToCompare(uni);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -118,7 +180,6 @@ const UniversitiesPage = () => {
       <main>
         {/* Hero Section with Dynamic Background */}
         <section className="pt-20 relative overflow-hidden min-h-[500px]">
-          {/* Animated Background */}
           <AnimatePresence mode="wait">
             <motion.div
               key={currentBackground}
@@ -186,6 +247,7 @@ const UniversitiesPage = () => {
             >
               {countries.map((c) => (
                 <button
+                  type="button"
                   key={c.id}
                   onClick={() => setActiveCountry(c.id)}
                   className={cn(
@@ -208,11 +270,11 @@ const UniversitiesPage = () => {
               transition={{ duration: 0.4, delay: 0.3 }}
               className="flex flex-wrap justify-center items-center gap-3"
             >
-              {/* Rank filter pills */}
               <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-1.5">
                 <Filter className="w-3.5 h-3.5 text-white/60 shrink-0" />
                 {(["all", "top10", "top50", "top100"] as RankFilter[]).map((r) => (
                   <button
+                    type="button"
                     key={r}
                     onClick={() => setRankFilter(r)}
                     className={cn(
@@ -227,7 +289,6 @@ const UniversitiesPage = () => {
                 ))}
               </div>
 
-              {/* Sort */}
               <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-1.5">
                 {([
                   { id: "default", label: "Default", Icon: null },
@@ -236,6 +297,7 @@ const UniversitiesPage = () => {
                 ] as { id: SortOrder; label: string; Icon: React.ComponentType<{ className?: string }> | null }[]).map(
                   ({ id, label, Icon }) => (
                     <button
+                      type="button"
                       key={id}
                       onClick={() => setSortOrder(id)}
                       className={cn(
@@ -254,7 +316,6 @@ const UniversitiesPage = () => {
             </motion.div>
           </div>
 
-          {/* Bottom Wave */}
           <div className="absolute bottom-0 left-0 right-0">
             <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
               <path
@@ -270,7 +331,7 @@ const UniversitiesPage = () => {
           <div className="container mx-auto px-4">
             {!!error && (
               <div className="mb-6 rounded-xl border border-amber-200/40 bg-amber-50/40 px-4 py-3 text-sm text-amber-900">
-                Couldn’t load universities from the server. Showing offline data instead.
+                Couldn't load universities from the server. Showing offline data instead.
               </div>
             )}
 
@@ -278,7 +339,8 @@ const UniversitiesPage = () => {
             <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
               <p className="text-muted-foreground">
                 Showing{" "}
-                <span className="font-semibold text-foreground">{filteredUniversities.length}</span> universities
+                <span className="font-semibold text-foreground">{filteredUniversities.length}</span>{" "}
+                {shouldFallback || !hasNextPage ? "" : "of many"} universities
                 {featuredCount > 0 && (
                   <span className="ml-2 text-amber-500 font-medium text-sm">· {featuredCount} featured</span>
                 )}
@@ -293,6 +355,7 @@ const UniversitiesPage = () => {
               </p>
               {hasActiveFilters && (
                 <button
+                  type="button"
                   onClick={clearFilters}
                   className="text-xs text-muted-foreground hover:text-accent transition-colors underline underline-offset-2"
                 >
@@ -301,7 +364,13 @@ const UniversitiesPage = () => {
               )}
             </div>
 
-            {filteredUniversities.length === 0 ? (
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <UniversityCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : filteredUniversities.length === 0 ? (
               <div className="text-center py-24">
                 <GraduationCap className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
                 <p className="text-foreground font-semibold mb-2">No universities found</p>
@@ -311,104 +380,141 @@ const UniversitiesPage = () => {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredUniversities.map((uni, index) => {
-                  const avgRating = getAverageRating(uni.id);
-                  return (
-                    <motion.div
-                      key={`${uni.id}-${index}`}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.4, delay: index * 0.03 }}
-                    >
-                      <Link to={`/universities/${uni.id}`} className="block h-full">
-                        <div className="university-card group h-full flex flex-col">
-                          {/* Campus Image */}
-                          <div className="relative h-48 overflow-hidden">
-                            <img
-                              src={uni.image}
-                              alt={uni.name}
-                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-                            {/* Animated Ranking Badge */}
-                            <div className="absolute top-3 right-3">
-                              <RankingBadge
-                                rank={uni.ranking}
-                                source={uni.rankingSource}
-                                updatedAt={uni.rankingUpdatedAt}
-                                size="sm"
-                                animate={true}
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredUniversities.map((uni, index) => {
+                    const avgRating = getAverageRating(uni.id);
+                    const inCompare = isInCompare(uni.id);
+                    return (
+                      <motion.div
+                        key={`${uni.id}-${index}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: Math.min(index * 0.03, 0.3) }}
+                      >
+                        <Link to={`/universities/${uni.id}`} className="block h-full">
+                          <div className="university-card group h-full flex flex-col">
+                            {/* Campus Image */}
+                            <div className="relative h-48 overflow-hidden">
+                              <img
+                                src={uni.image}
+                                alt={uni.name}
+                                loading="lazy"
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                               />
-                            </div>
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-                            {/* Featured Badge */}
-                            {uni.featured && (
-                              <div className="absolute top-3 left-3">
-                                <FeaturedBadge size="sm" />
-                              </div>
-                            )}
-
-                            {/* Logo */}
-                            <div className="absolute bottom-4 left-4 w-14 h-14 rounded-xl bg-white shadow-lg overflow-hidden flex items-center justify-center">
-                              {uni.logo.startsWith('http') ? (
-                                <img
-                                  src={uni.logo}
-                                  alt={`${uni.name} logo`}
-                                  className="w-full h-full object-contain p-1"
-                                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement)!.style.display = 'flex'; }}
+                              <div className="absolute top-3 right-3">
+                                <RankingBadge
+                                  rank={uni.ranking}
+                                  source={uni.rankingSource}
+                                  updatedAt={uni.rankingUpdatedAt}
+                                  size="sm"
+                                  animate={true}
                                 />
-                              ) : null}
-                              <span
-                                className="text-primary font-bold text-xs"
-                                style={{ display: uni.logo.startsWith('http') ? 'none' : 'flex' }}
+                              </div>
+
+                              {uni.featured && (
+                                <div className="absolute top-3 left-3">
+                                  <FeaturedBadge size="sm" />
+                                </div>
+                              )}
+
+                              {/* Compare toggle */}
+                              <button
+                                type="button"
+                                onClick={(e) => handleCompareToggle(e, uni)}
+                                title={inCompare ? "Remove from compare" : isFull ? "Compare list full (max 4)" : "Add to compare"}
+                                aria-label={inCompare ? `Remove ${uni.name} from compare` : `Add ${uni.name} to compare`}
+                                className={cn(
+                                  "absolute bottom-3 right-3 w-7 h-7 rounded-full flex items-center justify-center transition-all shadow-lg border",
+                                  inCompare
+                                    ? "bg-accent text-white border-accent"
+                                    : isFull
+                                    ? "bg-black/40 text-white/40 border-white/20 cursor-not-allowed"
+                                    : "bg-black/40 text-white border-white/30 hover:bg-accent hover:border-accent"
+                                )}
                               >
-                                {uni.logo.startsWith('http') ? uni.name.split(' ').map(w => w[0]).join('').slice(0, 4) : uni.logo}
-                              </span>
-                            </div>
-                          </div>
+                                {inCompare ? <Check className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                              </button>
 
-                          {/* Content */}
-                          <div className="p-5 flex-grow flex flex-col">
-                            <div className="flex items-start gap-2 mb-3">
-                              <span className="text-lg">{getCountryFlag(uni.country)}</span>
-                              <div className="flex-1">
-                                <h3 className="font-semibold text-lg text-foreground mb-1 group-hover:text-accent transition-colors line-clamp-2">
-                                  {uni.name}
-                                </h3>
-                                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                                  <MapPin className="w-3.5 h-3.5" />
-                                  {uni.location}
-                                </p>
+                              <div className="absolute bottom-4 left-4 w-14 h-14 rounded-xl bg-white shadow-lg overflow-hidden flex items-center justify-center">
+                                {uni.logo.startsWith('http') ? (
+                                  <img
+                                    src={uni.logo}
+                                    alt={`${uni.name} logo`}
+                                    loading="lazy"
+                                    className="w-full h-full object-contain p-1"
+                                    onError={(e) => {
+                                      (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                      (e.currentTarget.nextElementSibling as HTMLElement)!.style.display = 'flex';
+                                    }}
+                                  />
+                                ) : null}
+                                <span
+                                  className={cn(
+                                    "text-primary font-bold text-xs",
+                                    uni.logo.startsWith('http') ? 'hidden' : 'flex'
+                                  )}
+                                >
+                                  {uni.logo}
+                                </span>
                               </div>
                             </div>
 
-                            <p className="text-xs text-muted-foreground/60 uppercase tracking-wider mb-3">{uni.type}</p>
-
-                            {/* Rating */}
-                            {avgRating > 0 && (
-                              <div className="flex items-center gap-1.5 mb-3">
-                                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                                <span className="text-sm font-medium text-foreground">{avgRating.toFixed(1)}</span>
-                                <span className="text-xs text-muted-foreground">student rating</span>
+                            {/* Content */}
+                            <div className="p-5 flex-grow flex flex-col">
+                              <div className="flex items-start gap-2 mb-3">
+                                <span className="text-lg">{getCountryFlag(uni.country)}</span>
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-lg text-foreground mb-1 group-hover:text-accent transition-colors line-clamp-2">
+                                    {uni.name}
+                                  </h3>
+                                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                    <MapPin className="w-3.5 h-3.5" />
+                                    {uni.location}
+                                  </p>
+                                </div>
                               </div>
-                            )}
 
-                            <div className="mt-auto pt-4 border-t border-border">
-                              <Button variant="outline" size="sm" className="w-full group/btn">
-                                View Details
-                                <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
-                              </Button>
+                              <p className="text-xs text-muted-foreground/60 uppercase tracking-wider mb-3">{uni.type}</p>
+
+                              {avgRating > 0 && (
+                                <div className="flex items-center gap-1.5 mb-3">
+                                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                                  <span className="text-sm font-medium text-foreground">{avgRating.toFixed(1)}</span>
+                                  <span className="text-xs text-muted-foreground">student rating</span>
+                                </div>
+                              )}
+
+                              <div className="mt-auto pt-4 border-t border-border">
+                                <Button variant="outline" size="sm" className="w-full group/btn">
+                                  View Details
+                                  <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-              </div>
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {/* Infinite scroll sentinel */}
+                <div ref={sentinelRef} className="h-8 mt-8 flex items-center justify-center">
+                  {isFetchingNextPage && (
+                    <div className="flex items-center gap-3 text-muted-foreground text-sm">
+                      <div className="w-5 h-5 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+                      Loading more universities...
+                    </div>
+                  )}
+                  {!hasNextPage && !shouldFallback && filteredUniversities.length > 0 && (
+                    <p className="text-xs text-muted-foreground">All universities loaded</p>
+                  )}
+                </div>
+              </>
             )}
           </div>
         </section>
@@ -417,61 +523,71 @@ const UniversitiesPage = () => {
         <section className="py-16 bg-secondary/30">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="text-center"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
-                  <GraduationCap className="w-7 h-7 text-accent" />
-                </div>
-                <p className="text-3xl font-bold text-foreground mb-1">{universitiesData.length}+</p>
-                <p className="text-sm text-muted-foreground">Partner Universities</p>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
-                className="text-center"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-teal/10 flex items-center justify-center mx-auto mb-4">
-                  <Users className="w-7 h-7 text-teal" />
-                </div>
-                <p className="text-3xl font-bold text-foreground mb-1">10,000+</p>
-                <p className="text-sm text-muted-foreground">Students Placed</p>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.2 }}
-                className="text-center"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-success/10 flex items-center justify-center mx-auto mb-4">
-                  <MapPin className="w-7 h-7 text-success" />
-                </div>
-                <p className="text-3xl font-bold text-foreground mb-1">11</p>
-                <p className="text-sm text-muted-foreground">Countries</p>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3 }}
-                className="text-center"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <TrendingUp className="w-7 h-7 text-primary" />
-                </div>
-                <p className="text-3xl font-bold text-foreground mb-1">95%</p>
-                <p className="text-sm text-muted-foreground">Visa Success Rate</p>
-              </motion.div>
+              {[
+                { Icon: GraduationCap, value: `${universitiesData.length}+`, label: "Partner Universities", color: "accent" },
+                { Icon: Users, value: "10,000+", label: "Students Placed", color: "teal" },
+                { Icon: MapPin, value: "11", label: "Countries", color: "success" },
+                { Icon: TrendingUp, value: "95%", label: "Visa Success Rate", color: "primary" },
+              ].map(({ Icon, value, label, color }, i) => (
+                <motion.div
+                  key={label}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="text-center"
+                >
+                  <div className={`w-14 h-14 rounded-2xl bg-${color}/10 flex items-center justify-center mx-auto mb-4`}>
+                    <Icon className={`w-7 h-7 text-${color}`} />
+                  </div>
+                  <p className="text-3xl font-bold text-foreground mb-1">{value}</p>
+                  <p className="text-sm text-muted-foreground">{label}</p>
+                </motion.div>
+              ))}
             </div>
           </div>
         </section>
       </main>
+
+      {/* Floating Comparison Bar */}
+      <AnimatePresence>
+        {compareList.length > 0 && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-primary text-white rounded-2xl shadow-2xl px-5 py-3 flex items-center gap-4"
+          >
+            <Scale className="w-5 h-5 shrink-0" />
+            <span className="text-sm font-medium">
+              {compareList.length} {compareList.length === 1 ? "university" : "universities"} selected
+            </span>
+            <div className="flex gap-1.5">
+              {compareList.map((u) => (
+                <span key={u.id} className="flex items-center gap-1 bg-white/20 rounded-full px-2 py-0.5 text-xs">
+                  {u.name.split(" ")[0]}
+                  <button
+                    type="button"
+                    aria-label={`Remove ${u.name} from comparison`}
+                    onClick={() => removeFromCompare(u.id)}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            {compareList.length >= 2 && (
+              <Button
+                size="sm"
+                className="bg-accent hover:bg-accent/90 text-white rounded-xl h-8 px-4 text-xs"
+                onClick={() => navigate("/compare")}
+              >
+                Compare Now
+              </Button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Footer />
     </div>
