@@ -185,7 +185,7 @@ const UniversitiesPage = () => {
   const apiUniversities: University[] = data?.universities || [];
   const pagination = data?.pagination;
 
-  const shouldFallback = !!error || (!isLoading && !isFetching && apiUniversities.length === 0 && !data);
+  const shouldFallback = !!error || (!isLoading && !isFetching && apiUniversities.length === 0);
 
   // Local pagination for fallback (API down)
   const localFiltered = (universitiesData as unknown as University[]).filter((uni) => {
@@ -424,7 +424,9 @@ const UniversitiesPage = () => {
             <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
               <div className="flex items-center gap-3">
                 <p className="text-muted-foreground">
-                  {totalUniversities > 0 ? (
+                  {isLoading || (isFetching && totalUniversities === 0) ? (
+                    <span className="text-muted-foreground">Loading universities...</span>
+                  ) : totalUniversities > 0 ? (
                     <>
                       Showing{" "}
                       <span className="font-semibold text-foreground">
@@ -434,9 +436,7 @@ const UniversitiesPage = () => {
                       <span className="font-semibold text-foreground">{totalUniversities}</span>{" "}
                       universities
                     </>
-                  ) : (
-                    <span className="font-semibold text-foreground">Searching...</span>
-                  )}
+                  ) : null}
                   {featuredCount > 0 && (
                     <span className="ml-2 text-amber-500 font-medium text-sm">· {featuredCount} featured</span>
                   )}
