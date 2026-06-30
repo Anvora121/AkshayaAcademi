@@ -194,7 +194,7 @@ router.get('/my-applications', auth_1.verifyToken, async (req, res) => {
 // @access  Admin
 router.post('/', auth_1.verifyToken, (0, auth_1.requireRole)(['admin']), async (req, res) => {
     try {
-        const university = await University_1.University.findOneAndUpdate({ id: req.body.id }, req.body, { upsert: true, new: true, runValidators: true });
+        const university = await University_1.University.findOneAndUpdate({ id: req.body.id }, req.body, { upsert: true, returnDocument: 'after', runValidators: true });
         res.json(university);
     }
     catch (error) {

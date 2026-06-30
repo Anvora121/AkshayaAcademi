@@ -93,7 +93,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
         const article = await News.findOneAndUpdate(
             { slug: req.params.slug, status: 'published' },
             { $inc: { views: 1 } },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!article) {

@@ -70,7 +70,7 @@ router.put('/news/:id', async (req: Request, res: Response) => {
         const article = await News.findByIdAndUpdate(
             req.params.id,
             { ...req.body },
-            { new: true, runValidators: true }
+            { returnDocument: 'after', runValidators: true }
         );
         if (!article) return res.status(404).json({ message: 'Article not found' });
         // Regenerate slug if title changed
@@ -128,7 +128,7 @@ router.post('/news-sources', async (req: Request, res: Response) => {
 
 router.put('/news-sources/:id', async (req: Request, res: Response) => {
     try {
-        const source = await NewsSource.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const source = await NewsSource.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
         if (!source) return res.status(404).json({ message: 'Source not found' });
         res.json(source);
     } catch (err: any) {
@@ -203,7 +203,7 @@ router.put('/counselor-lead/:id/status', async (req: Request, res: Response) => 
         const lead = await CounselorLead.findByIdAndUpdate(
             req.params.id,
             { status },
-            { new: true }
+            { returnDocument: 'after' }
         );
         if (!lead) return res.status(404).json({ message: 'Counselor lead not found' });
         res.json(lead);

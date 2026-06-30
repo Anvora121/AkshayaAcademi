@@ -167,7 +167,7 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
-        const app = await UniversityApplication.findByIdAndUpdate(id, { status }, { new: true });
+        const app = await UniversityApplication.findByIdAndUpdate(id, { status }, { returnDocument: 'after' });
         res.json(app);
     } catch (error: any) {
         res.status(500).json({ message: error.message });

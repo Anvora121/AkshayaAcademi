@@ -94,7 +94,7 @@ router.post(
         await Documents.findOneAndUpdate(
           { userId },
           { userId, [fieldKey]: driveResult.webViewLink },
-          { new: true, upsert: true }
+          { returnDocument: 'after', upsert: true }
         );
 
         return res.json({

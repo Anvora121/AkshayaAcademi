@@ -224,7 +224,7 @@ router.post('/', verifyToken, requireRole(['admin']), async (req: Request, res: 
         const university = await University.findOneAndUpdate(
             { id: req.body.id },
             req.body,
-            { upsert: true, new: true, runValidators: true }
+            { upsert: true, returnDocument: 'after', runValidators: true }
         );
         res.json(university);
     } catch (error) {

@@ -97,6 +97,7 @@ app.use('/api/admin', admin_1.default);
 app.use('/api/news', news_1.default);
 // Database Connection
 console.log('Connecting to MongoDB...');
+mongoose_1.default.set('bufferCommands', false);
 mongoose_1.default
     .connect(process.env.MONGODB_URI)
     .then(() => {

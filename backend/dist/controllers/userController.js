@@ -17,15 +17,15 @@ const updateOnboarding = async (req, res) => {
         let result;
         switch (step) {
             case 2: // Preferences
-                result = await Preferences_1.Preferences.findOneAndUpdate({ userId }, { userId, ...data }, { new: true, upsert: true });
+                result = await Preferences_1.Preferences.findOneAndUpdate({ userId }, { userId, ...data }, { returnDocument: 'after', upsert: true });
                 user.onboardingStep = Math.max(user.onboardingStep, 2);
                 break;
             case 3: // Academic
-                result = await Education_1.Education.findOneAndUpdate({ userId }, { userId, ...data }, { new: true, upsert: true });
+                result = await Education_1.Education.findOneAndUpdate({ userId }, { userId, ...data }, { returnDocument: 'after', upsert: true });
                 user.onboardingStep = Math.max(user.onboardingStep, 3);
                 break;
             case 4: // Documents
-                result = await Documents_1.Documents.findOneAndUpdate({ userId }, { userId, ...data }, { new: true, upsert: true });
+                result = await Documents_1.Documents.findOneAndUpdate({ userId }, { userId, ...data }, { returnDocument: 'after', upsert: true });
                 user.onboardingStep = Math.max(user.onboardingStep, 4);
                 break;
             case 5: // Finalize
@@ -106,7 +106,7 @@ const updateProfile = async (req, res) => {
                 prefUpdate.preferredCountries = data.preferredCountries;
             if (data.preferredUniversities !== undefined)
                 prefUpdate.preferredUniversities = data.preferredUniversities;
-            await Preferences_1.Preferences.findOneAndUpdate({ userId }, prefUpdate, { new: true, upsert: true });
+            await Preferences_1.Preferences.findOneAndUpdate({ userId }, prefUpdate, { returnDocument: 'after', upsert: true });
         }
         // Education fields
         const eduFields = ['degree', 'specialization', 'college', 'cgpa', 'backlogs', 'testScores'];
@@ -119,7 +119,7 @@ const updateProfile = async (req, res) => {
             }
         }
         if (hasEduUpdate) {
-            await Education_1.Education.findOneAndUpdate({ userId }, eduUpdate, { new: true, upsert: true });
+            await Education_1.Education.findOneAndUpdate({ userId }, eduUpdate, { returnDocument: 'after', upsert: true });
         }
         const updatedProfile = await buildUserProfile(userId);
         res.json({ message: 'Profile updated successfully', profile: updatedProfile });

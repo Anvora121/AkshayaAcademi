@@ -97,7 +97,7 @@ router.put('/:id', verifyToken, requireRole(['admin']), async (req: AuthRequest,
         const updatedOffer = await Offer.findByIdAndUpdate(
             req.params.id,
             { universityName, country, image, title, description, originalFee, discountedFee, offerEndDate, features, terms, isActive },
-            { new: true, runValidators: true }
+            { returnDocument: 'after', runValidators: true }
         );
 
         if (!updatedOffer) {

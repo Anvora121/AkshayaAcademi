@@ -86,7 +86,7 @@ router.put('/:id', auth_1.verifyToken, (0, auth_1.requireRole)(['admin']), async
     try {
         // Sanitize input to only include expected fields
         const { universityName, country, image, title, description, originalFee, discountedFee, offerEndDate, features, terms, isActive } = req.body;
-        const updatedOffer = await Offer_1.Offer.findByIdAndUpdate(req.params.id, { universityName, country, image, title, description, originalFee, discountedFee, offerEndDate, features, terms, isActive }, { new: true, runValidators: true });
+        const updatedOffer = await Offer_1.Offer.findByIdAndUpdate(req.params.id, { universityName, country, image, title, description, originalFee, discountedFee, offerEndDate, features, terms, isActive }, { returnDocument: 'after', runValidators: true });
         if (!updatedOffer) {
             return res.status(404).json({ message: 'Offer not found' });
         }

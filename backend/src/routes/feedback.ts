@@ -106,7 +106,7 @@ router.patch('/:id/moderate', verifyToken, requireRole(['admin']), async (req: A
         const feedback = await UniversityFeedback.findByIdAndUpdate(
             req.params.id,
             { moderationStatus: status },
-            { new: true, runValidators: true }
+            { returnDocument: 'after', runValidators: true }
         );
 
         if (!feedback) {

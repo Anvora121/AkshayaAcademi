@@ -75,7 +75,7 @@ router.post('/document', auth_1.verifyToken, (req, res) => {
             const driveResult = await (0, googleDrive_1.uploadToDrive)(req.file.buffer, req.file.mimetype, fileName, folderId);
             // Persist the web view link in MongoDB Documents collection
             const fieldKey = DOC_FIELD_MAP[docType];
-            await Documents_1.Documents.findOneAndUpdate({ userId }, { userId, [fieldKey]: driveResult.webViewLink }, { new: true, upsert: true });
+            await Documents_1.Documents.findOneAndUpdate({ userId }, { userId, [fieldKey]: driveResult.webViewLink }, { returnDocument: 'after', upsert: true });
             return res.json({
                 message: 'File uploaded to Google Drive successfully',
                 url: driveResult.webViewLink,

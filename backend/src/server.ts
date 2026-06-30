@@ -106,6 +106,7 @@ app.use('/api/news', newsRoutes);
 
 // Database Connection
 console.log('Connecting to MongoDB...');
+mongoose.set('bufferCommands', false);
 mongoose
     .connect(process.env.MONGODB_URI!)
     .then(() => {

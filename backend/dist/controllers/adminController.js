@@ -167,7 +167,7 @@ const updateApplicationStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
-        const app = await UniversityApplication_1.UniversityApplication.findByIdAndUpdate(id, { status }, { new: true });
+        const app = await UniversityApplication_1.UniversityApplication.findByIdAndUpdate(id, { status }, { returnDocument: 'after' });
         res.json(app);
     }
     catch (error) {

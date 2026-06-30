@@ -24,7 +24,7 @@ export const updateOnboarding = async (req: AuthRequest, res: Response) => {
         result = await Preferences.findOneAndUpdate(
           { userId },
           { userId, ...data },
-          { new: true, upsert: true }
+          { returnDocument: 'after', upsert: true }
         );
         user.onboardingStep = Math.max(user.onboardingStep, 2);
         break;
@@ -33,7 +33,7 @@ export const updateOnboarding = async (req: AuthRequest, res: Response) => {
         result = await Education.findOneAndUpdate(
           { userId },
           { userId, ...data },
-          { new: true, upsert: true }
+          { returnDocument: 'after', upsert: true }
         );
         user.onboardingStep = Math.max(user.onboardingStep, 3);
         break;
@@ -42,7 +42,7 @@ export const updateOnboarding = async (req: AuthRequest, res: Response) => {
         result = await Documents.findOneAndUpdate(
           { userId },
           { userId, ...data },
-          { new: true, upsert: true }
+          { returnDocument: 'after', upsert: true }
         );
         user.onboardingStep = Math.max(user.onboardingStep, 4);
         break;
@@ -118,7 +118,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       if (data.domain !== undefined) prefUpdate.domain = data.domain;
       if (data.preferredCountries !== undefined) prefUpdate.preferredCountries = data.preferredCountries;
       if (data.preferredUniversities !== undefined) prefUpdate.preferredUniversities = data.preferredUniversities;
-      await Preferences.findOneAndUpdate({ userId }, prefUpdate, { new: true, upsert: true });
+      await Preferences.findOneAndUpdate({ userId }, prefUpdate, { returnDocument: 'after', upsert: true });
     }
 
     // Education fields
@@ -132,7 +132,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       }
     }
     if (hasEduUpdate) {
-      await Education.findOneAndUpdate({ userId }, eduUpdate, { new: true, upsert: true });
+      await Education.findOneAndUpdate({ userId }, eduUpdate, { returnDocument: 'after', upsert: true });
     }
 
     const updatedProfile = await buildUserProfile(userId);

@@ -93,7 +93,7 @@ router.patch('/:id/moderate', auth_1.verifyToken, (0, auth_1.requireRole)(['admi
         if (!['approved', 'rejected'].includes(status)) {
             return res.status(400).json({ message: 'Status must be approved or rejected' });
         }
-        const feedback = await UniversityFeedback_1.UniversityFeedback.findByIdAndUpdate(req.params.id, { moderationStatus: status }, { new: true, runValidators: true });
+        const feedback = await UniversityFeedback_1.UniversityFeedback.findByIdAndUpdate(req.params.id, { moderationStatus: status }, { returnDocument: 'after', runValidators: true });
         if (!feedback) {
             return res.status(404).json({ message: 'Feedback not found' });
         }
